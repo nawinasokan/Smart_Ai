@@ -1,0 +1,12 @@
+ai_env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+instance/
+.env
+venv/
+.env.*
+*.sqlite3
+*.db
+.DS_Store
