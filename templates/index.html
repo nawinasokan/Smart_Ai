@@ -14,6 +14,7 @@
       N<span class="text-blue-600 animate-pulse">A</span>W<span class="text-blue-600 animate-pulse">I</span>N
     </h1>
 
+
     <!-- Mode Selection -->
     <div class="space-y-2">
       <label class="block text-sm font-medium text-gray-700">Select Mode</label>
@@ -51,7 +52,7 @@
     <div class="relative">
       <div id="output" class="bg-gray-100 border border-dashed border-gray-400 rounded-lg min-h-[120px] whitespace-pre-wrap text-sm text-gray-800 pr-10">
         <!-- Copy -->
-        <pre id="output-text" class="whitespace-pre-wrap"></pre>
+        <pre id="output-text" class="hidden whitespace-pre-wrap"></pre>
         <button id="copy" onclick="copyOutput()" class="hidden absolute top-2 left-2 text-gray-600 hover:text-blue-600 transition" title="Copy">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h6a2 2 0 002-2v-8a2 2 0 00-2-2h-6a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -67,6 +68,18 @@
       </div>
     </div>
   </div>
+
+  <div class="absolute top-10 right-20 bg-white shadow-md rounded-xl px-4 py-2 text-sm text-right space-y-1 border border-gray-200">
+    <div id="limit-info" class="font-semibold text-blue-700">
+      Daily Generation Limit: <span class="font-bold">3</span>
+    </div>
+    <div id="available-count" class="hidden text-gray-700">
+      Remaining Generations: 0
+    </div>
+  </div>
+
+
+ 
 
   <script>
 
@@ -98,8 +111,8 @@
       const output = document.getElementById("output");
       const loading = document.getElementById("loading");
       const copy = document.getElementById("copy");
-      const clear = document.getElementById("clear");
-      
+      const clear = document.getElementById("clear");  
+      const AvailableCount = document.getElementById("available-count")    
 
       if (!mode) return showToast("Please select a mode.");
       if (!prompt) return showToast("Please enter a prompt.");
@@ -119,7 +132,22 @@
       copy.classList.remove("hidden");
       clear.classList.remove("hidden");
       loading.classList.add("hidden");
+      outputText.classList.remove("hidden");
+      AvailableCount.classList.remove("hidden");
       outputText.innerText = data.response;
+      outputText.style.marginLeft = "5%";
+      outputText.style.borderRadius = "10px";
+      outputText.style.fontFamily = "revert-layer";
+      outputText.style.padding = "20px";
+      outputText.style.backgroundColor = "#dfd8cd";
+      outputText.style.transition = "background-color 0.3s ease";
+      console.log(data);
+
+      document.getElementById("available-count").innerText = `Remaining Generations: ${data.remaining}`;
+
+      if (data.limitExceeded) {
+        showToast("Generation limit reached.");
+      }
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -140,7 +168,7 @@
     }
 
     function clearOutput() {
-      document.getElementById("output-text").innerText = "";
+      document.getElementById("output-text").classList.add("hidden");
       document.getElementById("copy").classList.add("hidden");
       document.getElementById("clear").classList.add("hidden");
       showToast("Output cleared.");
