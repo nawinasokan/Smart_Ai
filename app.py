@@ -38,4 +38,5 @@ def get_prompt_template(mode, user_input):
     return templates.get(mode, user_input)
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    port = int(os.environ.get("PORT", 10000))  # Render will override with correct port
+    app.run(host="0.0.0.0", port=port)
