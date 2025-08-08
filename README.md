@@ -10,7 +10,7 @@ Smart AI is an intelligent assistant web app built with **Flask** and **Gemini A
   Select from different AI modes like:
   - **Code Summary**: Paste your code to get an instant summary or explanation.
   - **Custom Email Generator**: Enter a prompt or scenario, and Smart AI crafts a complete email.
-  - **General Prompt Mode**: Input any text prompt and receive a creative or informative output.
+  - **General Prompt Mode**: Input any text prompt and receive a creative or informative output
 
 - 🎨 **User-Friendly Interface**:  
   Clean and responsive design using:
@@ -45,6 +45,8 @@ Smart AI is an intelligent assistant web app built with **Flask** and **Gemini A
 5. ✅ **Output Display** – AI-generated result is shown on the page.
 
 ---
+
+## Follow the all steps
 
 ## 📦 Installation
 
