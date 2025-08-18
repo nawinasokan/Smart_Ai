@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <title>Authenticating...</title>
+</head>
+<body>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      console.log("🔍 URL hash parameters:", hashParams.toString());
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const providerToken = hashParams.get("provider_token");
+      const tokenType = hashParams.get("token_type");
+      console.log("🔍 Auth Callback page loaded");
+
+      console.log("🔍 Extracted tokens:", {
+        accessToken,
+        refreshToken,
+        providerToken,
+        tokenType,
+      });
+
+
+      if (accessToken) {
+        fetch(`/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&provider_token=${providerToken}&token_type=${tokenType}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                window.location.href = "/";
+                } else {
+                alert("Login failed: " + data.message);
+                }
+                    });
+                } else {
+                    alert("No access token found. Please try logging in again.");
+                }
+        });
+  </script>
+  <p>Authenticating, please wait...</p>
+</body>
+</html>
