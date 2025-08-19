@@ -45,14 +45,3 @@ Smart AI is an intelligent assistant web app built with **Flask** and **Gemini A
 5. ✅ **Output Display** – AI-generated result is shown on the page.
 
 ---
-
-## Follow the all steps
-
-## 📦 Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/nawinasokan/Smart_Ai.git
-cd Smart_Ai
-# Smart_Ai
