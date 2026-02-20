@@ -1,28 +1,29 @@
 # app.py
-from flask import Flask, render_template, request, jsonify
-from collections import defaultdict
-import requests
+from flask import Flask, render_template, request, jsonify, redirect, session, url_for
 from supabase_client import supabase
-import google.generativeai as genai
-from datetime import datetime
+from google import genai
 from dotenv import load_dotenv
-from flask import redirect, session, url_for
 import os
 import jwt
 
 
-app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
-load_dotenv()  # loads .env file
+load_dotenv()  # loads .env file FIRST before anything else
 
-# Set your Gemini API key
+app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback-dev-secret")
+
+# Supabase & Gemini config
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+REDIRECT_URL = os.getenv("REDIRECT_URL", "http://localhost:8002/auth/callback")
+
 if not GOOGLE_API_KEY:
     raise ValueError("Missing GOOGLE_API_KEY in environment variables.")
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-pro')
+
+# New google-genai SDK client
+client = genai.Client(api_key=GOOGLE_API_KEY)
+GEMINI_MODEL = "gemini-2.5-flash"
 
 
 @app.route("/auth/callback")
@@ -41,8 +42,9 @@ def auth_callback():
             return jsonify({"success": False, "message": "Email not found in token"}), 401
 
         # Sync with custom users table
-        user = supabase.table("users").select("*").eq("email", email).single().execute()
-        if not user.data:
+        user_resp = supabase.table("users").select("*").eq("email", email).maybe_single().execute()
+        user_data = user_resp.data if user_resp else None
+        if not user_data:
             supabase.table("users").insert({"email": email, "name": name, "generation_count": 0}).execute()
         else:
             supabase.table("users").update({"name": name}).eq("email", email).execute()
@@ -52,13 +54,19 @@ def auth_callback():
         session["name"] = name
         return jsonify({"success": True})
     except Exception as e:
-        print("JWT decode error:", str(e))
-        return jsonify({"success": False, "message": "Token decode error"}), 500
+        print("Auth callback error:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route("/login")
 def login():
     print("Redirecting to login page")
-    return render_template("login.html")
+    supabase_oauth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={REDIRECT_URL}"
+    return render_template("login.html", supabase_oauth_url=supabase_oauth_url)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
 
 @app.route("/")
 def index():
@@ -74,8 +82,8 @@ def generate():
         return jsonify({"response": "Not logged in", "limitExceeded": True, "remaining": 0}), 401
 
     # Get user record
-    user_result = supabase.table("users").select("*").eq("email", email).single().execute()
-    user = user_result.data
+    user_result = supabase.table("users").select("*").eq("email", email).maybe_single().execute()
+    user = user_result.data if user_result else None
     if not user:
         return jsonify({"response": "User not found", "limitExceeded": True, "remaining": 0}), 404
 
@@ -95,7 +103,10 @@ def generate():
     formatted_prompt = get_prompt_template(mode, prompt)
 
     try:
-        response = model.generate_content(formatted_prompt)
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=formatted_prompt
+        )
 
         # Increment generation count for user
         supabase.table("users").update({
