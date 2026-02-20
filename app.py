@@ -29,7 +29,6 @@ GEMINI_MODEL = "gemini-2.5-flash"
 @app.route("/auth/callback")
 def auth_callback():
     access_token = request.args.get("access_token")
-    print("Access token received:", access_token)   
     if not access_token:
         return render_template("auth_callback.html")
 

@@ -1,6 +1,67 @@
 <!doctype html>
 <html>
 <head>
+    <title>Authenticating...</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    .loader-container {
+      text-align: center;
+    }
+
+    .loader {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .loader span {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 4px solid transparent;
+      border-top: 4px solid #00f2fe;
+      border-right: 4px solid #4facfe;
+      animation: spin 1.5s linear infinite;
+    }
+
+    .loader span:nth-child(2) {
+      inset: 15px;
+      animation-duration: 1s;
+      border-top: 4px solid #43e97b;
+      border-right: 4px solid #38f9d7;
+    }
+
+    .loader span:nth-child(3) {
+      inset: 30px;
+      animation-duration: 0.7s;
+      border-top: 4px solid #fa709a;
+      border-right: 4px solid #fee140;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      margin-top: 25px;
+      font-size: 18px;
+      letter-spacing: 1px;
+      opacity: 0.85;
+    }
+  </style>
   <title>Authenticating...</title>
 </head>
 <body>
@@ -37,6 +98,39 @@
                 }
         });
   </script>
-  <p>Authenticating, please wait...</p>
+    <div class="loader-container">
+      <div class="loader">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="loading-text">
+        Authenticating, please wait...
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const providerToken = hashParams.get("provider_token");
+        const tokenType = hashParams.get("token_type");
+
+        if (accessToken) {
+          fetch(`/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&provider_token=${providerToken}&token_type=${tokenType}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                window.location.href = "/";
+              } else {
+                alert("Login failed: " + data.message);
+              }
+            });
+        } else {
+          alert("No access token found. Please try logging in again.");
+        }
+      });
+    </script>
 </body>
 </html>
