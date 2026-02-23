@@ -16,7 +16,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback-dev-secret")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-REDIRECT_URL = os.getenv("REDIRECT_URL", "http://localhost:8002/auth/callback")
+REDIRECT_URL = os.getenv("REDIRECT_URL")
 
 if not GOOGLE_API_KEY:
     raise ValueError("Missing GOOGLE_API_KEY in environment variables.")
