@@ -1,74 +1,357 @@
-<!doctype html>
-<html lang="en" class="bg-light">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart AI Login</title>
-
-  <!-- Bootstrap CSS for quick styling -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+  <title>Smart AI — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* ─── Design Tokens ──────────────────────────────────────────────────── */
+    :root {
+      --bg:      #04060f;
+      --accent:  #6366f1;
+      --accent2: #8b5cf6;
+      --accent3: #06b6d4;
+      --text-1:  #f1f5f9;
+      --text-2:  #94a3b8;
+      --text-3:  #475569;
+      --border:  rgba(255,255,255,0.07);
+      --ease:    cubic-bezier(0.4,0,0.2,1);
+      --spring:  cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background: #f2f5fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .login-card {
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .brand-logo {
-      width: 50px;
-    }
-
-    .google-btn {
-      background-color: #ffffff;
-      border: 1px solid #ddd;
-      color: #444;
-      font-weight: 500;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Background ─────────────────────────────────────────────────────── */
+    .bg-scene {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.14;
+    }
+
+    .orb-1 {
+      width: 650px; height: 650px;
+      background: radial-gradient(circle, #6366f1, transparent 70%);
+      top: -200px; left: -180px;
+      animation: drift1 30s infinite ease-in-out;
+    }
+
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #8b5cf6, transparent 70%);
+      bottom: -120px; right: -120px;
+      animation: drift2 24s infinite ease-in-out;
+    }
+
+    .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, #06b6d4, transparent 70%);
+      top: 50%; left: 55%;
+      transform: translate(-50%,-50%);
+      animation: drift3 38s infinite ease-in-out;
+    }
+
+    @keyframes drift1 {
+      0%,100% { transform: translate(0,0); }
+      40%      { transform: translate(35px,-35px); }
+      70%      { transform: translate(-20px,25px); }
+    }
+    @keyframes drift2 {
+      0%,100% { transform: translate(0,0); }
+      50%      { transform: translate(-30px,20px); }
+    }
+    @keyframes drift3 {
+      0%,100% { transform: translate(-50%,-50%) scale(1); }
+      50%      { transform: translate(calc(-50% + 25px),calc(-50% - 25px)) scale(1.1); }
+    }
+
+    .grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.017) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.017) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ─── Card ───────────────────────────────────────────────────────────── */
+    .card-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 400px;
+      padding: 16px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px 36px 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.04) inset,
+        0 30px 80px rgba(0,0,0,0.45),
+        0 0 120px rgba(99,102,241,0.08);
+      animation: card-in 0.6s var(--spring) both;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(28px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+
+    /* Top accent line */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 15%; right: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+
+    /* Subtle inner glow */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -80px; left: -80px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(99,102,241,0.06), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ─── Logo area ──────────────────────────────────────────────────────── */
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .logo-gem {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.3),
+        0 0 30px rgba(99,102,241,0.5),
+        0 0 60px rgba(99,102,241,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      animation: gem-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes gem-pulse {
+      0%,100% { box-shadow: 0 0 0 1px rgba(99,102,241,0.3), 0 0 30px rgba(99,102,241,0.5), 0 0 60px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.2); }
+      50%      { box-shadow: 0 0 0 1px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.7), 0 0 80px rgba(99,102,241,0.25), inset 0 1px 0 rgba(255,255,255,0.2); }
+    }
+
+    .brand-name {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+      background: linear-gradient(120deg, #fff 30%, var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-tagline {
+      font-size: 14px;
+      color: var(--text-2);
+      font-weight: 400;
+      text-align: center;
+      line-height: 1.5;
+      margin-top: -10px;
+    }
+
+    /* ─── Divider ────────────────────────────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .divider span {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider p {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    /* ─── Google Button ──────────────────────────────────────────────────── */
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      color: var(--text-1);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .google-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0), rgba(255,255,255,0.04));
+      opacity: 0;
+      transition: opacity 0.25s;
     }
 
     .google-btn:hover {
-      background-color: #f1f1f1;
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.22);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.08);
     }
 
-    .google-btn img {
-      height: 20px;
-      margin-right: 10px;
+    .google-btn:hover::before { opacity: 1; }
+
+    .google-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
     }
+
+    /* Google logo */
+    .google-btn img {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Shine sweep on hover */
+    .google-btn .btn-shine {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: -80%;
+      width: 35%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      transform: skewX(-20deg);
+      transition: none;
+      pointer-events: none;
+    }
+
+    .google-btn:hover .btn-shine {
+      animation: sweep 0.6s var(--ease) forwards;
+    }
+
+    @keyframes sweep {
+      from { left: -80%; }
+      to   { left: 130%; }
+    }
+
+    /* ─── Footer note ────────────────────────────────────────────────────── */
+    .foot-note {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+
+    .foot-note strong {
+      color: var(--text-2);
+      font-weight: 600;
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
   </style>
 </head>
 
 <body>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card login-card p-4" style="max-width: 400px; width: 100%;">
-      <div class="text-center mb-4">
-        <!-- <img src="#" class="brand-logo" alt="F1 Logo"> -->
-        <h4 class="mt-2 fw-bold">Smart AI</h4>
-        <p class="text-muted small">Sign in with your Google account to continue</p>
+
+  <!-- Background -->
+  <div class="bg-scene" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="grid" aria-hidden="true"></div>
+
+  <!-- Card -->
+  <div class="card-wrap">
+    <div class="card">
+
+      <!-- Logo -->
+      <div class="logo-wrap">
+        <div class="logo-gem">✦</div>
+        <h1 class="brand-name">Smart AI</h1>
+        <p class="brand-tagline">Sign in with your Google account<br>to continue generating</p>
       </div>
 
-      <div class="d-grid">
-        <a href="{{ supabase_oauth_url }}" class="btn google-btn">
-          <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon">
-          Sign in with Google
-        </a>
+      <!-- Divider -->
+      <div class="divider">
+        <span></span><p>Continue with</p><span></span>
       </div>
+
+      <!-- Google sign-in -->
+      <a href="{{ supabase_oauth_url }}" class="google-btn">
+        <span class="btn-shine" aria-hidden="true"></span>
+        <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google logo">
+        Sign in with Google
+      </a>
+
+      <!-- Footer -->
+      <p class="foot-note">
+        By signing in, you agree to our<br>
+        <strong>Terms of Service</strong> &amp; <strong>Privacy Policy</strong>
+      </p>
+
     </div>
   </div>
+
   <script>
     console.log("🔍 Login page loaded");
   </script>
 
-
-
-
 </body>
-
 </html>

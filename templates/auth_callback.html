@@ -1,25 +1,104 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Authenticating...</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authenticating…</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ─── Reset ──────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Body ───────────────────────────────────────────────────────────── */
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      font-family: Arial, sans-serif;
-      color: white;
+      justify-content: center;
+      background: #04060f;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #f1f5f9;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Animated Background ────────────────────────────────────────────── */
+    .bg-scene {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
       overflow: hidden;
     }
 
-    .loader-container {
-      text-align: center;
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.13;
     }
 
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #6366f1, transparent 70%);
+      top: -180px; left: -180px;
+      animation: orb-drift 26s ease-in-out infinite;
+    }
+
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #8b5cf6, transparent 70%);
+      bottom: -120px; right: -120px;
+      animation: orb-drift 20s ease-in-out infinite reverse;
+    }
+
+    .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, #06b6d4, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: orb-pulse 32s ease-in-out infinite;
+    }
+
+    @keyframes orb-drift {
+      0%,100% { transform: translate(0,0); }
+      35%      { transform: translate(30px,-25px); }
+      70%      { transform: translate(-20px,20px); }
+    }
+
+    @keyframes orb-pulse {
+      0%,100% { transform: translate(-50%,-50%) scale(1); }
+      50%      { transform: translate(-50%,-50%) scale(1.15); }
+    }
+
+    /* Grid */
+    .grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.017) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.017) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ─── Content ────────────────────────────────────────────────────────── */
+    .loader-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      animation: fade-in 0.5s ease both;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Triple Ring Spinner ─────────────────────────────────────────────── */
     .loader {
       position: relative;
       width: 120px;
@@ -31,40 +110,121 @@
       inset: 0;
       border-radius: 50%;
       border: 4px solid transparent;
-      border-top: 4px solid #00f2fe;
-      border-right: 4px solid #4facfe;
+    }
+
+    .loader span:nth-child(1) {
+      border-top-color: #6366f1;
+      border-right-color: #4f46e5;
       animation: spin 1.5s linear infinite;
+      filter: drop-shadow(0 0 6px #6366f1);
     }
 
     .loader span:nth-child(2) {
       inset: 15px;
-      animation-duration: 1s;
-      border-top: 4px solid #43e97b;
-      border-right: 4px solid #38f9d7;
+      border-top-color: #43e97b;
+      border-right-color: #38f9d7;
+      animation: spin 1s linear infinite reverse;
+      filter: drop-shadow(0 0 5px #43e97b);
     }
 
     .loader span:nth-child(3) {
       inset: 30px;
-      animation-duration: 0.7s;
-      border-top: 4px solid #fa709a;
-      border-right: 4px solid #fee140;
+      border-top-color: #fa709a;
+      border-right-color: #fee140;
+      animation: spin 0.7s linear infinite;
+      filter: drop-shadow(0 0 4px #fa709a);
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
+      0%   { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
+    /* Center icon */
+    .loader-center {
+      position: absolute;
+      inset: 45px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 0 20px rgba(99,102,241,0.5);
+      animation: center-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes center-pulse {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(0.88); opacity: 0.75; }
+    }
+
+    /* ─── Text area ──────────────────────────────────────────────────────── */
+    .text-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
     .loading-text {
-      margin-top: 25px;
       font-size: 18px;
-      letter-spacing: 1px;
-      opacity: 0.85;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: #f1f5f9;
+    }
+
+    .loading-sub {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 400;
+    }
+
+    /* Animated dots */
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dots span {
+      width: 5px; height: 5px;
+      background: #6366f1;
+      border-radius: 50%;
+      animation: dot-bounce 1.3s ease-in-out infinite;
+    }
+
+    .dots span:nth-child(2) { animation-delay: 0.22s; background: #8b5cf6; }
+    .dots span:nth-child(3) { animation-delay: 0.44s; background: #06b6d4; }
+
+    @keyframes dot-bounce {
+      0%,80%,100% { transform: scale(0.55); opacity: 0.35; }
+      40%          { transform: scale(1); opacity: 1; }
+    }
+
+    /* ─── Progress bar ───────────────────────────────────────────────────── */
+    .progress-wrap {
+      width: 200px;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+      background-size: 200% 100%;
+      border-radius: 99px;
+      animation: progress-slide 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-slide {
+      0%   { width: 0%; background-position: 0% 50%; }
+      50%  { width: 80%; background-position: 100% 50%; }
+      100% { width: 100%; background-position: 0% 50%; }
     }
   </style>
-  <title>Authenticating...</title>
-</head>
-<body>
+
+  <!-- Auth logic runs immediately to process URL hash -->
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -82,7 +242,6 @@
         tokenType,
       });
 
-
       if (accessToken) {
         fetch(`/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&provider_token=${providerToken}&token_type=${tokenType}`)
             .then(res => res.json())
@@ -98,39 +257,65 @@
                 }
         });
   </script>
-    <div class="loader-container">
-      <div class="loader">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <div class="loading-text">
-        Authenticating, please wait...
+</head>
+
+<body>
+
+  <!-- Background -->
+  <div class="bg-scene" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="grid" aria-hidden="true"></div>
+
+  <!-- Loader -->
+  <div class="loader-container">
+
+    <div class="loader" role="status" aria-label="Authenticating">
+      <span></span>
+      <span></span>
+      <span></span>
+      <div class="loader-center">✦</div>
+    </div>
+
+    <div class="text-area">
+      <p class="loading-text">Authenticating…</p>
+      <p class="loading-sub">Verifying your identity, please wait</p>
+      <div class="dots" aria-hidden="true">
+        <span></span><span></span><span></span>
       </div>
     </div>
 
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        const providerToken = hashParams.get("provider_token");
-        const tokenType = hashParams.get("token_type");
+    <div class="progress-wrap" aria-hidden="true">
+      <div class="progress-bar"></div>
+    </div>
 
-        if (accessToken) {
-          fetch(`/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&provider_token=${providerToken}&token_type=${tokenType}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                window.location.href = "/";
-              } else {
-                alert("Login failed: " + data.message);
-              }
-            });
-        } else {
-          alert("No access token found. Please try logging in again.");
-        }
-      });
-    </script>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const providerToken = hashParams.get("provider_token");
+      const tokenType = hashParams.get("token_type");
+
+      if (accessToken) {
+        fetch(`/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&provider_token=${providerToken}&token_type=${tokenType}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              window.location.href = "/";
+            } else {
+              alert("Login failed: " + data.message);
+            }
+          });
+      } else {
+        alert("No access token found. Please try logging in again.");
+      }
+    });
+  </script>
+
 </body>
 </html>
