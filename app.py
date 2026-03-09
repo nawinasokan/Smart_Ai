@@ -11,6 +11,7 @@ load_dotenv()  # loads .env file FIRST before anything else
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback-dev-secret")
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Supabase & Gemini config
 SUPABASE_URL = os.getenv("SUPABASE_URL")
