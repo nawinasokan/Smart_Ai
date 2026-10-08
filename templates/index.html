@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IdeaDraft — Smart AI Writing Assistant</title>
+  <title>Smart AI Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <style>
@@ -13,6 +13,7 @@
       --bg-base: #080a16;
       --bg-card: rgba(255, 255, 255, 0.04);
       --bg-card-hover: rgba(255, 255, 255, 0.07);
+      --bg-sidebar: rgba(10, 12, 24, 0.65);
       --bg-output: rgba(13, 15, 28, 0.8);
       --border: rgba(255, 255, 255, 0.08);
       --border-lit: rgba(99, 102, 241, 0.5);
@@ -24,14 +25,15 @@
       --text-3: #64748b;
       --green: #10b981;
       --red: #ef4444;
+      --amber: #f59e0b;
       --r-sm: 10px;
       --r-md: 16px;
       --r-lg: 24px;
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
       --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --sidebar-w: 268px;
     }
 
-    /* ─── Reset ──────────────────────────────────────────────────────────── */
     *,
     *::before,
     *::after {
@@ -44,14 +46,20 @@
       display: none !important;
     }
 
-    /* ─── Body ───────────────────────────────────────────────────────────── */
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-base);
       color: var(--text-1);
       min-height: 100vh;
-      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font-family: inherit;
+      color: inherit;
     }
 
     /* ─── Animated BG Orbs ───────────────────────────────────────────────── */
@@ -141,7 +149,6 @@
       }
     }
 
-    /* Fine grid overlay */
     .grid-overlay {
       position: fixed;
       inset: 0;
@@ -153,218 +160,423 @@
       background-size: 48px 48px;
     }
 
-    /* ─── Layout ─────────────────────────────────────────────────────────── */
-    .page {
+    /* ─── App Shell ──────────────────────────────────────────────────────── */
+    .app-shell {
       position: relative;
       z-index: 1;
+      display: flex;
       min-height: 100vh;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 60px;
-    }
-
-    /* ─── Header / Nav ───────────────────────────────────────────────────── */
-    .nav {
-      width: 100%;
-      max-width: 820px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 36px;
-      padding: 14px 20px;
-      background: var(--bg-card);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-right: 1px solid var(--border);
+      padding: 22px 16px;
       position: sticky;
-      top: 16px;
-      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.35);
-    }
-
-    /* Top rainbow line */
-    .nav::before {
-      content: '';
-      position: absolute;
       top: 0;
-      left: 20%;
-      right: 20%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), var(--accent-3), transparent);
-      border-radius: 99px;
+      height: 100vh;
+      overflow-y: auto;
     }
 
-    .brand {
+    .sidebar-brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      text-decoration: none;
+      padding: 4px 8px 26px;
     }
 
     .brand-gem {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border-radius: 9px;
+      border-radius: 10px;
       display: grid;
       place-items: center;
-      font-size: 16px;
+      font-size: 17px;
       box-shadow: 0 0 18px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
       flex-shrink: 0;
     }
 
-    .brand-name {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(120deg, #fff 30%, var(--accent-3));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
     }
 
-    .nav-right {
+    .brand-name {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .side-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--r-sm);
+      color: var(--text-2);
+      font-size: 13.5px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s var(--ease);
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-1);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(139, 92, 246, 0.12));
+      border-color: rgba(99, 102, 241, 0.3);
+      color: #e0e7ff;
+      box-shadow: 0 2px 14px rgba(99, 102, 241, 0.15);
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 4px;
+    }
+
+    .sidebar-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 14px;
+    }
+
+    .usage-mini {
+      padding: 12px 13px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+    }
+
+    .usage-mini-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .usage-mini-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .usage-mini-count {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #a5b4fc;
+    }
+
+    .usage-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .usage-bar.large {
+      height: 9px;
+      margin: 10px 0;
+    }
+
+    .usage-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 99px;
+      transition: width 0.4s var(--ease);
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-3), var(--accent));
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .user-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 11px;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .logout-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 12px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s var(--ease);
+    }
+
+    .logout-link:hover {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .logout-link svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* ─── Mobile top bar + scrim ─────────────────────────────────────────── */
+    .mobile-topbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: rgba(8, 10, 22, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mobile-menu-btn {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text-1);
+      cursor: pointer;
+    }
+
+    .sidebar-scrim {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 19;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    /* ─── Main Area ──────────────────────────────────────────────────────── */
+    .main-area {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 22px 32px 14px;
+    }
+
+    .topbar-title h1 {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .topbar-title p {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    .topbar-actions {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    /* Daily limit pill */
-    #limit-info {
+    .model-pill,
+    .limit-pill {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 7px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .model-pill {
       background: rgba(99, 102, 241, 0.1);
       border: 1px solid rgba(99, 102, 241, 0.22);
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 600;
       color: #a5b4fc;
-      white-space: nowrap;
     }
 
-    #limit-info::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
-      flex-shrink: 0;
-    }
-
-    /* Remaining badge */
-    #available-count {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
+    .limit-pill {
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 600;
       color: #6ee7b7;
-      white-space: nowrap;
     }
 
-    #available-count::before {
+    .limit-pill.low {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: #fcd34d;
+    }
+
+    .limit-pill::before {
       content: '';
       width: 6px;
       height: 6px;
-      background: var(--green);
       border-radius: 50%;
+      background: var(--green);
       box-shadow: 0 0 8px var(--green);
       flex-shrink: 0;
-      animation: pulse-green 2s infinite;
     }
 
-    @keyframes pulse-green {
-
-      0%,
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      50% {
-        opacity: 0.5;
-        transform: scale(0.7);
-      }
+    .limit-pill.low::before {
+      background: var(--amber);
+      box-shadow: 0 0 8px var(--amber);
     }
 
-    /* User chip */
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 99px;
+    .limit-banner {
+      margin: 0 32px 0;
+      padding: 12px 18px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: var(--r-sm);
+      color: #fcd34d;
       font-size: 13px;
       font-weight: 500;
-      color: var(--text-2);
-    }
-
-    .online-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--green);
-      animation: pulse-green 2.5s infinite;
-    }
-
-    /* Logout */
-    .logout-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 99px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s var(--ease);
-      white-space: nowrap;
+      gap: 10px;
     }
 
-    .logout-btn:hover {
-      background: rgba(239, 68, 68, 0.18);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #f87171;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+    .view-wrap {
+      flex: 1;
+      padding: 18px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
-    /* ─── Main Card ──────────────────────────────────────────────────────── */
-    .card {
+    .view {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      max-width: 880px;
       width: 100%;
-      max-width: 820px;
+      animation: view-in 0.35s var(--ease) both;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    @keyframes view-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ─── Shared panel ───────────────────────────────────────────────────── */
+    .panel {
       background: var(--bg-card);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 36px;
+      padding: 28px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.04) inset, 0 20px 80px rgba(0, 0, 0, 0.4);
     }
 
-    /* Top accent line */
-    .card::before {
+    .panel::before {
       content: '';
       position: absolute;
       top: 0;
@@ -374,14 +586,13 @@
       background: linear-gradient(90deg, transparent 5%, var(--accent) 40%, var(--accent-2) 60%, transparent 95%);
     }
 
-    /* ─── Section Label ──────────────────────────────────────────────────── */
     .label {
       font-size: 10.5px;
       font-weight: 700;
-      letter-spacing: 1.8px;
+      letter-spacing: 1.6px;
       text-transform: uppercase;
       color: var(--text-3);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -394,133 +605,77 @@
       background: linear-gradient(90deg, var(--border), transparent);
     }
 
-    /* ─── Mode Selector ──────────────────────────────────────────────────── */
-    .modes {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-bottom: 32px;
+    /* ─── Form fields ────────────────────────────────────────────────────── */
+    .field {
+      margin-bottom: 16px;
     }
 
-    /* Hidden native select — still used by JS */
-    #mode {
-      display: none;
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 7px;
     }
 
-    .mode-btn {
-      position: relative;
-      padding: 14px 8px;
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 12px 14px;
       background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      color: var(--text-2);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      color: var(--text-1);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s var(--ease);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(99, 102, 241, 0.035);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .field select {
       cursor: pointer;
-      transition: all 0.22s var(--ease);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
-      overflow: hidden;
     }
 
-    .mode-btn .mi {
-      font-size: 22px;
-      line-height: 1;
-      transition: transform 0.25s var(--spring);
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
 
-    .mode-btn:hover {
-      background: rgba(99, 102, 241, 0.08);
-      border-color: rgba(99, 102, 241, 0.3);
-      color: #c7d2fe;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.12);
-    }
-
-    .mode-btn:hover .mi {
-      transform: scale(1.15) translateY(-1px);
-    }
-
-    .mode-btn.active {
-      background: rgba(99, 102, 241, 0.13);
-      border-color: var(--accent);
-      color: #e0e7ff;
-      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25), 0 6px 30px rgba(99, 102, 241, 0.18);
-    }
-
-    .mode-btn.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    }
-
-    /* ─── Prompt Textarea ────────────────────────────────────────────────── */
-    .prompt-wrap {
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    #prompt {
+    .text-input {
       width: 100%;
-      min-height: 148px;
+      min-height: 150px;
       background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
       color: var(--text-1);
       font-family: inherit;
-      font-size: 15px;
-      line-height: 1.75;
-      padding: 18px 20px 42px;
+      font-size: 14.5px;
+      line-height: 1.7;
+      padding: 16px 18px;
       resize: vertical;
       outline: none;
       transition: all 0.25s var(--ease);
-      caret-color: var(--accent-3);
+      margin-bottom: 18px;
     }
 
-    #prompt::placeholder {
+    .text-input::placeholder {
       color: var(--text-3);
       font-style: italic;
     }
 
-    #prompt:focus {
+    .text-input:focus {
       border-color: rgba(99, 102, 241, 0.5);
       background: rgba(99, 102, 241, 0.035);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 8px 40px rgba(99, 102, 241, 0.06);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
-    .prompt-hint {
-      position: absolute;
-      bottom: 13px;
-      right: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-3);
-      pointer-events: none;
-    }
-
-    .kbd {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-bottom-width: 2px;
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 10px;
-      font-weight: 600;
-      font-family: inherit;
-      color: var(--text-3);
-    }
-
-    /* ─── Actions Row ────────────────────────────────────────────────────── */
     .actions {
       display: flex;
       align-items: center;
@@ -528,16 +683,14 @@
       gap: 12px;
     }
 
-    /* Generate button */
     .gen-btn {
       position: relative;
-      padding: 14px 36px;
+      padding: 13px 30px;
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       border: none;
       border-radius: var(--r-sm);
       color: #fff;
-      font-family: inherit;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       letter-spacing: 0.2px;
       cursor: pointer;
@@ -546,73 +699,62 @@
       box-shadow: 0 4px 24px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
-    .gen-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 255, 255, 0);
-      transition: background 0.2s;
-    }
-
-    .gen-btn:hover {
+    .gen-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.55), 0 0 80px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
-    .gen-btn:hover::before {
-      background: rgba(255, 255, 255, 0.07);
-    }
-
-    .gen-btn:active {
+    .gen-btn:active:not(:disabled) {
       transform: translateY(1px);
-      box-shadow: 0 3px 16px rgba(99, 102, 241, 0.4);
     }
 
-    /* Shine sweep */
-    .gen-btn .shine {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: -80%;
-      width: 40%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transform: skewX(-20deg);
-      animation: sweep 4s infinite;
+    .gen-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
-    @keyframes sweep {
-      0% {
-        left: -80%;
-        opacity: 0;
-      }
-
-      10% {
-        opacity: 1;
-      }
-
-      30%,
-      100% {
-        left: 140%;
-        opacity: 0;
-      }
+    /* ─── Chip toggles ───────────────────────────────────────────────────── */
+    .chip-toggle {
+      padding: 7px 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s var(--ease);
+      white-space: nowrap;
     }
 
-    /* ─── Loading Indicator ──────────────────────────────────────────────── */
-    #loading {
+    .chip-toggle:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+      color: var(--text-1);
+    }
+
+    .chip-toggle.active {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: var(--accent);
+      color: #e0e7ff;
+    }
+
+    /* ─── Loading card ───────────────────────────────────────────────────── */
+    .loading-card {
       display: flex;
       align-items: center;
       gap: 18px;
-      padding: 22px 24px;
+      padding: 20px 24px;
       background: rgba(99, 102, 241, 0.05);
       border: 1px solid rgba(99, 102, 241, 0.14);
       border-radius: var(--r-md);
-      margin-top: 22px;
     }
 
     .spinner {
       position: relative;
-      width: 44px;
-      height: 44px;
+      width: 38px;
+      height: 38px;
       flex-shrink: 0;
     }
 
@@ -629,13 +771,13 @@
     }
 
     .spinner span:nth-child(2) {
-      inset: 7px;
+      inset: 6px;
       border-top-color: var(--accent-2);
       animation: spin 0.75s linear infinite reverse;
     }
 
     .spinner span:nth-child(3) {
-      inset: 14px;
+      inset: 12px;
       border-top-color: var(--accent-3);
       animation: spin 0.5s linear infinite;
     }
@@ -646,44 +788,349 @@
       }
     }
 
-    .loading-info {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
+    .loading-title {
+      font-size: 13.5px;
+      font-weight: 600;
     }
 
-    .loading-title {
-      font-size: 14px;
+    .loading-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* ─── Result panel ───────────────────────────────────────────────────── */
+    .result-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ai-output-card {
+      background: rgba(10, 12, 24, 0.55);
+      border: 1px solid var(--border-lit);
+      border-radius: var(--r-md);
+      padding: 22px;
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.1);
+    }
+
+    .ai-output-card p {
+      font-size: 14.5px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .export-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .export-btn,
+    .icon-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 12.5px;
       font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+
+    .export-btn:hover,
+    .icon-btn:hover {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.35);
+      color: #e0e7ff;
+      transform: translateY(-1px);
+    }
+
+    .export-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 800;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .export-badge.pdf {
+      background: #ef4444;
+    }
+
+    .export-badge.xlsx {
+      background: #10b981;
+    }
+
+    .export-badge.docx {
+      background: #3b82f6;
+    }
+
+    .export-badge.txt {
+      background: #64748b;
+    }
+
+    /* ─── Dropzone ───────────────────────────────────────────────────────── */
+    .dropzone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 40px 20px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--r-md);
+      background: rgba(255, 255, 255, 0.015);
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      text-align: center;
+    }
+
+    .dropzone:hover,
+    .dropzone.drag-over {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(99, 102, 241, 0.05);
+      color: var(--text-2);
+    }
+
+    .dropzone svg {
+      opacity: 0.6;
+    }
+
+    .dropzone p strong {
       color: var(--text-1);
     }
 
-    #loading-text {
+    .dropzone-hint {
       font-size: 12px;
-      color: var(--text-3);
-      transition: opacity 0.4s;
     }
 
-    /* Loading dots animation */
-    .loading-dots {
+    .file-preview {
+      margin-top: 16px;
+    }
+
+    .file-preview-head {
       display: flex;
-      gap: 5px;
-      margin-top: 4px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      margin-bottom: 12px;
     }
 
-    .loading-dots span {
-      width: 4px;
-      height: 4px;
-      background: var(--accent);
+    .file-preview-head svg {
+      color: var(--accent-3);
+      flex-shrink: 0;
+    }
+
+    .file-preview-head>div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-preview-head p:first-child {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-preview-sub {
+      font-size: 11.5px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    .file-preview-head button {
+      background: none;
+      border: none;
+      color: var(--text-3);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .file-preview-head button:hover {
+      color: #f87171;
+    }
+
+    #doc-extracted-text {
+      width: 100%;
+      min-height: 120px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text-2);
+      font-size: 12.5px;
+      line-height: 1.6;
+      padding: 14px;
+      resize: vertical;
+    }
+
+    /* ─── Chat view ──────────────────────────────────────────────────────── */
+    .chat-shell {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      backdrop-filter: blur(30px);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      height: calc(100vh - 230px);
+      min-height: 420px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chat-shell::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 5%, var(--accent) 40%, var(--accent-2) 60%, transparent 95%);
+      z-index: 1;
+    }
+
+    .chat-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 26px 26px 10px;
+    }
+
+    .chat-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+      height: 100%;
+      color: var(--text-3);
+      padding: 20px;
+    }
+
+    .chat-welcome-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 6px;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .chat-welcome h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-1);
+    }
+
+    .chat-welcome p {
+      font-size: 13px;
+      max-width: 360px;
+    }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .chat-row {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+      align-items: flex-start;
+    }
+
+    .chat-row-user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .chat-row-ai {
+      align-self: flex-start;
+    }
+
+    .chat-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .chat-row-user .chat-avatar {
+      background: linear-gradient(135deg, var(--accent-3), var(--accent));
+    }
+
+    .chat-row-ai .chat-avatar {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .chat-bubble {
+      padding: 13px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .chat-row-user .chat-bubble {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    .chat-row-ai .chat-bubble {
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid var(--border);
+      color: var(--text-1);
+      border-top-left-radius: 4px;
+    }
+
+    .chat-typing {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 16px;
+    }
+
+    .chat-typing span {
+      width: 5px;
+      height: 5px;
+      background: var(--accent-3);
       border-radius: 50%;
       animation: bounce-dot 1.2s infinite ease-in-out;
     }
 
-    .loading-dots span:nth-child(2) {
+    .chat-typing span:nth-child(2) {
       animation-delay: 0.2s;
     }
 
-    .loading-dots span:nth-child(3) {
+    .chat-typing span:nth-child(3) {
       animation-delay: 0.4s;
     }
 
@@ -702,117 +1149,321 @@
       }
     }
 
-    /* ─── Output Area ────────────────────────────────────────────────────── */
-    .output-section {
-      position: relative;
-      margin-top: 22px;
+    .chat-composer {
+      border-top: 1px solid var(--border);
+      padding: 14px 20px 18px;
+      background: rgba(8, 10, 22, 0.4);
     }
 
-    #output {
-      background: rgb(57 53 47);
+    .composer-chip-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .attach-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 99px;
+      font-size: 12px;
+      color: #c7d2fe;
+      margin-bottom: 10px;
+    }
+
+    .attach-chip button {
+      background: none;
+      border: none;
+      color: #c7d2fe;
+      font-size: 15px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .composer-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
-      min-height: 160px;
-      position: relative;
-      transition: all 0.4s var(--ease);
-      overflow: hidden;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      padding: 8px 8px 8px 14px;
+      transition: all 0.2s var(--ease);
     }
 
-    #output.has-content {
-      border-color: var(--border-lit);
-      box-shadow: 0 0 50px rgba(99, 102, 241, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.2);
+    .composer-row:focus-within {
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
-    /* Empty state */
-    .output-empty {
-      position: absolute;
-      inset: 0;
+    #chat-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-1);
+      font-size: 14.5px;
+      line-height: 1.6;
+      resize: none;
+      max-height: 160px;
+      padding: 8px 0;
+    }
+
+    #chat-input::placeholder {
+      color: var(--text-3);
+    }
+
+    .composer-icon-btn,
+    .composer-send {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-2);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s var(--ease);
+    }
+
+    .composer-icon-btn:hover {
+      color: var(--text-1);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    .composer-send {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+    }
+
+    .composer-send:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.55);
+    }
+
+    .composer-send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ─── History view ───────────────────────────────────────────────────── */
+    .history-head {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .history-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
       gap: 10px;
+    }
+
+    .empty-note {
       color: var(--text-3);
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
-
-    .output-empty.fade-out {
-      opacity: 0;
-    }
-
-    .output-empty svg {
-      opacity: 0.25;
-    }
-
-    .output-empty p {
       font-size: 13px;
       font-style: italic;
+      padding: 20px 4px;
     }
 
-    /* Output text */
-    #output-text {
-      padding: 24px;
-      font-size: 15px;
-      line-height: 1.8;
-      color: var(--text-1);
-      white-space: pre-wrap;
-      font-family: inherit;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.5s var(--ease);
-    }
-
-    #output-text.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    #output-text.code-mode {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 14px;
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    /* Output action buttons */
-    .out-actions {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      display: flex;
-      gap: 6px;
-    }
-
-    #copy,
-    #clear {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 255, 255, 0.05);
+    .history-item {
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--r-sm);
+      background: rgba(255, 255, 255, 0.02);
+      overflow: hidden;
+    }
+
+    .history-item-head {
+      width: 100%;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 12px;
+      padding: 13px 16px;
+      background: none;
+      border: none;
       cursor: pointer;
-      transition: all 0.2s var(--ease);
+      text-align: left;
+    }
+
+    .history-mode-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      white-space: nowrap;
+    }
+
+    .history-item-prompt {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-item-time {
+      font-size: 11.5px;
+      color: var(--text-3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .history-chevron {
+      flex-shrink: 0;
+      transition: transform 0.2s var(--ease);
+      color: var(--text-3);
+    }
+
+    .history-item.expanded .history-chevron {
+      transform: rotate(180deg);
+    }
+
+    .history-item-body {
+      padding: 0 16px 16px;
+    }
+
+    .history-item-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 10px 0 5px;
+    }
+
+    .history-item-text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-2);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .history-item-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* ─── Settings view ──────────────────────────────────────────────────── */
+    .settings-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .settings-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-3), var(--accent));
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .settings-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .settings-email {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    .settings-block {
+      padding: 18px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .usage-caption {
+      font-size: 12.5px;
       color: var(--text-2);
     }
 
-    #copy:hover {
-      background: rgba(99, 102, 241, 0.18);
-      border-color: rgba(99, 102, 241, 0.4);
-      color: #a5b4fc;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.25);
-      transform: scale(1.08);
+    .settings-hint {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 8px;
     }
 
-    #clear:hover {
-      background: rgba(239, 68, 68, 0.18);
-      border-color: rgba(239, 68, 68, 0.4);
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13.5px;
+      color: var(--text-2);
+    }
+
+    .settings-row span:last-child {
+      color: var(--text-1);
+      font-weight: 600;
+    }
+
+    .danger-btn {
+      padding: 10px 18px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.22);
       color: #fca5a5;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.2);
-      transform: scale(1.08);
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+
+    .danger-btn:hover {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .logout-btn-full {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text-1);
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+
+    .logout-btn-full:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
     }
 
     /* ─── Toast ──────────────────────────────────────────────────────────── */
@@ -834,13 +1485,12 @@
       padding: 12px 18px;
       background: rgba(10, 12, 25, 0.96);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       color: var(--text-1);
       font-size: 13px;
       font-weight: 500;
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
       animation: toast-in 0.35s var(--spring) forwards;
       max-width: 290px;
     }
@@ -898,36 +1548,57 @@
     }
 
     /* ─── Responsive ─────────────────────────────────────────────────────── */
-    @media (max-width: 680px) {
-      .card {
-        padding: 22px 18px;
+    @media (max-width: 960px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 20;
+        transform: translateX(-100%);
+        transition: transform 0.25s var(--ease);
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
       }
 
-      .nav {
-        padding: 12px 16px;
+      body.sidebar-open .sidebar {
+        transform: translateX(0);
       }
 
-      .modes {
-        grid-template-columns: repeat(3, 1fr);
+      body.sidebar-open .sidebar-scrim {
+        display: block;
       }
 
-      .brand-name {
-        font-size: 16px;
+      .mobile-topbar {
+        display: flex;
       }
 
-      .gen-btn {
-        padding: 13px 24px;
-        font-size: 14px;
+      .topbar {
+        padding: 18px 20px 10px;
+      }
+
+      .view-wrap {
+        padding: 14px 20px 40px;
+      }
+
+      .limit-banner {
+        margin: 0 20px;
       }
     }
 
-    @media (max-width: 420px) {
-      .modes {
-        grid-template-columns: repeat(2, 1fr);
+    @media (max-width: 640px) {
+      .field-grid {
+        grid-template-columns: 1fr;
       }
 
-      .user-chip .chip-name {
-        display: none;
+      .topbar-title h1 {
+        font-size: 19px;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .chat-shell {
+        height: calc(100vh - 280px);
       }
     }
   </style>
@@ -943,130 +1614,497 @@
   </div>
   <div class="grid-overlay" aria-hidden="true"></div>
 
-  <!-- ─── Page ─────────────────────────────────────────────────────────── -->
-  <div class="page">
+  <div class="sidebar-scrim" id="sidebar-scrim"></div>
 
-    <!-- Nav -->
-    <nav class="nav">
-      <div class="brand">
+  <div class="app-shell">
+
+    <!-- ─── Sidebar ────────────────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
         <div class="brand-gem">✦</div>
-        <span class="brand-name">IdeaDraft</span>
+        <div class="brand-text">
+          <span class="brand-name">Smart AI</span>
+          <span class="brand-sub">Assistant</span>
+        </div>
       </div>
 
-      <div class="nav-right">
-        <div id="limit-info">Daily Limit: 3</div>
-        <div id="available-count" class="hidden">Remaining Generations: 0</div>
-        <div class="user-chip">
-          <div class="online-dot"></div>
-          <span class="chip-name">{{ name }}</span>
+      <nav class="side-nav">
+        <button type="button" class="nav-item active" data-view="chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+          Chat
+        </button>
+        <button type="button" class="nav-item" data-view="documents">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2v6h6" />
+          </svg>
+          Documents
+        </button>
+        <button type="button" class="nav-item" data-view="summarize">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+          Summarize
+        </button>
+        <button type="button" class="nav-item" data-view="translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+          </svg>
+          Translate
+        </button>
+        <button type="button" class="nav-item" data-view="email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+            <polyline points="22 6 12 13 2 6" />
+          </svg>
+          Email Draft
+        </button>
+        <button type="button" class="nav-item" data-view="blog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+            <path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z" />
+          </svg>
+          Blog Writer
+        </button>
+
+        <div class="nav-divider"></div>
+
+        <button type="button" class="nav-item" data-view="history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          History
+        </button>
+        <button type="button" class="nav-item" data-view="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+          </svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="usage-mini">
+          <div class="usage-mini-row">
+            <span class="usage-mini-label">Generations</span>
+            <span class="usage-mini-count" id="usage-mini-count">3 / 3</span>
+          </div>
+          <div class="usage-bar">
+            <div class="usage-bar-fill" id="usage-fill-sidebar"></div>
+          </div>
         </div>
-        <a href="/logout" class="logout-btn">
-          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <div class="user-card">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-meta">
+            <div class="user-name" id="user-name">{{ name or "Signed in" }}</div>
+            <div class="user-email" id="user-email">&nbsp;</div>
+          </div>
+        </div>
+        <a href="/logout" class="logout-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
           </svg>
           Sign out
         </a>
       </div>
-    </nav>
+    </aside>
 
-    <!-- Main Card -->
-    <main class="card">
+    <!-- ─── Main Area ──────────────────────────────────────────────────── -->
+    <div class="main-area">
 
-      <!-- Mode selector -->
-      <div style="margin-bottom: 30px;">
-        <p class="label">Generation Mode</p>
-        <div class="modes" id="modes">
-          <button type="button" class="mode-btn" data-value="email" onclick="selectMode('email')">
-            <span class="mi">✉️</span>Email
-          </button>
-          <button type="button" class="mode-btn" data-value="blog" onclick="selectMode('blog')">
-            <span class="mi">📝</span>Blog
-          </button>
-          <button type="button" class="mode-btn" data-value="code" onclick="selectMode('code')">
-            <span class="mi">💻</span>Code
-          </button>
-          <button type="button" class="mode-btn" data-value="summary" onclick="selectMode('summary')">
-            <span class="mi">📋</span>Summary
-          </button>
-          <button type="button" class="mode-btn" data-value="custom" onclick="selectMode('custom')">
-            <span class="mi">✨</span>Custom
-          </button>
-        </div>
-        <!-- Hidden select kept intact for backend JS logic -->
-        <select id="mode">
-          <option value="">-- Select --</option>
-          <option value="email">Email</option>
-          <option value="blog">Blog</option>
-          <option value="code">Code</option>
-          <option value="summary">Summary</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
-
-      <!-- Prompt -->
-      <div style="margin-bottom: 22px;">
-        <p class="label">Your Prompt</p>
-        <div class="prompt-wrap">
-          <textarea id="prompt"
-            placeholder="Describe what you want to generate… be as detailed as you like."></textarea>
-          <div class="prompt-hint">
-            <span class="kbd">↵ Enter</span>&nbsp;generate &nbsp;·&nbsp;
-            <span class="kbd">⇧ Shift+Enter</span>&nbsp;new line
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="actions">
-        <button type="button" onclick="generate()" class="gen-btn">
-          <span class="shine" aria-hidden="true"></span>
-          Generate ✦
+      <div class="mobile-topbar">
+        <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
+        <span class="brand-name" style="font-size:15px;">Smart AI</span>
       </div>
 
-      <!-- Loading -->
-      <div id="loading" class="hidden">
-        <div class="spinner" aria-hidden="true">
-          <span></span><span></span><span></span>
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="view-title">Chat</h1>
+          <p id="view-subtitle">Ask anything, brainstorm, or attach a document to discuss it.</p>
         </div>
-        <div class="loading-info">
-          <span class="loading-title">Thinking…</span>
-          <span id="loading-text">Initializing...</span>
-          <div class="loading-dots" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
+        <div class="topbar-actions">
+          <div class="model-pill">✦ <span id="model-pill-text">Gemini 2.5 Flash</span></div>
+          <div class="limit-pill" id="limit-pill">3 generations left</div>
         </div>
+      </header>
+
+      <div class="limit-banner hidden" id="limit-banner">
+        ⚠️ You've used all your generations for now. Ask an admin to reset your account to continue.
       </div>
 
-      <!-- Output -->
-      <div class="output-section">
-        <div id="output">
-          <div class="output-empty" id="out-empty">
-            <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
-            <p>Generated content will appear here</p>
+      <div class="view-wrap">
+
+        <!-- ─── Chat ──────────────────────────────────────────────────── -->
+        <section class="view active" id="view-chat" data-view="chat">
+          <div class="chat-shell">
+            <div class="chat-scroll" id="chat-scroll">
+              <div class="chat-welcome" id="chat-welcome">
+                <div class="chat-welcome-badge">✦</div>
+                <h2>How can I help today?</h2>
+                <p>Ask a question, brainstorm ideas, or attach a document and I'll read it for you.</p>
+              </div>
+              <div class="chat-messages" id="chat-messages"></div>
+            </div>
+            <div class="chat-composer">
+              <div class="composer-chip-row">
+                <button type="button" class="chip-toggle active" data-chat-mode="custom">General</button>
+                <button type="button" class="chip-toggle" data-chat-mode="code">Code</button>
+              </div>
+              <div class="attach-chip hidden" id="attach-chip">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                </svg>
+                <span id="attach-chip-name"></span>
+                <button type="button" id="attach-chip-remove" aria-label="Remove attachment">&times;</button>
+              </div>
+              <div class="composer-row">
+                <button type="button" class="composer-icon-btn" id="chat-attach-btn" title="Attach a document">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                      d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                  </svg>
+                </button>
+                <textarea id="chat-input" rows="1" placeholder="Type your message…"></textarea>
+                <button type="button" class="composer-send gen-action" id="chat-send-btn" title="Send">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+              <input type="file" id="chat-file-input" class="hidden" accept=".pdf,.docx,.xlsx,.txt">
+            </div>
           </div>
+        </section>
 
-          <pre id="output-text" class="hidden"></pre>
-
-          <div class="out-actions">
-            <button id="copy" class="hidden" onclick="copyOutput()" title="Copy to clipboard" type="button">
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" />
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+        <!-- ─── Documents ─────────────────────────────────────────────── -->
+        <section class="view" id="view-documents" data-view="documents">
+          <div class="panel">
+            <p class="label">Upload a document</p>
+            <div class="dropzone" id="doc-dropzone">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
-            </button>
-            <button id="clear" class="hidden" onclick="clearOutput()" title="Clear output" type="button">
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              <p><strong>Click to upload</strong> or drag and drop</p>
+              <p class="dropzone-hint">PDF, DOCX, XLSX or TXT · up to 10&nbsp;MB</p>
+              <input type="file" id="doc-file-input" class="hidden" accept=".pdf,.docx,.xlsx,.txt">
+            </div>
+            <div class="file-preview hidden" id="doc-file-preview">
+              <div class="file-preview-head">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+                <div>
+                  <p id="doc-file-name">—</p>
+                  <p class="file-preview-sub" id="doc-file-meta"></p>
+                </div>
+                <button type="button" id="doc-file-remove" aria-label="Remove file">&times;</button>
+              </div>
+              <textarea id="doc-extracted-text" readonly></textarea>
+            </div>
+            <div class="actions" style="margin-top:18px;">
+              <button type="button" class="gen-btn gen-action" id="doc-summarize-btn" disabled>Summarize Document
+                ✦</button>
+            </div>
           </div>
-        </div>
-      </div>
+          <div class="loading-card hidden" id="doc-loading">
+            <div class="spinner"><span></span><span></span><span></span></div>
+            <div>
+              <div class="loading-title">Reading your document…</div>
+              <div class="loading-sub">This can take a few seconds for longer files.</div>
+            </div>
+          </div>
+          <div class="panel result-panel hidden" id="doc-result-panel">
+            <p class="label">Document Summary</p>
+            <div class="ai-output-card">
+              <p id="doc-result-text"></p>
+            </div>
+            <div class="export-row">
+              <button type="button" class="export-btn" data-fmt="pdf"><span
+                  class="export-badge pdf">PDF</span>Document Summary (PDF)</button>
+              <button type="button" class="export-btn" data-fmt="xlsx"><span
+                  class="export-badge xlsx">XLS</span>Key Points (XLSX)</button>
+              <button type="button" class="export-btn" data-fmt="docx"><span
+                  class="export-badge docx">DOC</span>Detailed Report (DOCX)</button>
+              <button type="button" class="icon-btn copy-btn">Copy</button>
+            </div>
+          </div>
+        </section>
 
-    </main>
+        <!-- ─── Summarize ─────────────────────────────────────────────── -->
+        <section class="view" id="view-summarize" data-view="summarize">
+          <div class="panel">
+            <p class="label">Paste text to summarize</p>
+            <textarea id="summarize-input" class="text-input"
+              placeholder="Paste an article, notes, or any text you'd like summarized…"></textarea>
+            <div class="actions">
+              <button type="button" class="gen-btn gen-action" id="summarize-btn">Summarize ✦</button>
+            </div>
+          </div>
+          <div class="loading-card hidden" id="summarize-loading">
+            <div class="spinner"><span></span><span></span><span></span></div>
+            <div>
+              <div class="loading-title">Summarizing…</div>
+              <div class="loading-sub">Pulling out the key points.</div>
+            </div>
+          </div>
+          <div class="panel result-panel hidden" id="summarize-result-panel">
+            <p class="label">Summary</p>
+            <div class="ai-output-card">
+              <p id="summarize-result-text"></p>
+            </div>
+            <div class="export-row">
+              <button type="button" class="export-btn" data-fmt="pdf"><span class="export-badge pdf">PDF</span>
+                PDF</button>
+              <button type="button" class="export-btn" data-fmt="xlsx"><span class="export-badge xlsx">XLS</span>Key
+                Points (XLSX)</button>
+              <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
+                DOCX</button>
+              <button type="button" class="icon-btn copy-btn">Copy</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Translate ──────────────────────────────────────────────── -->
+        <section class="view" id="view-translate" data-view="translate">
+          <div class="panel">
+            <p class="label">Translate content</p>
+            <div class="field" style="max-width:260px;">
+              <label for="translate-lang">Target language</label>
+              <select id="translate-lang">
+                <option>English</option>
+                <option>Spanish</option>
+                <option>French</option>
+                <option>German</option>
+                <option>Hindi</option>
+                <option>Portuguese</option>
+                <option>Japanese</option>
+                <option>Chinese (Simplified)</option>
+                <option>Arabic</option>
+                <option>Russian</option>
+              </select>
+            </div>
+            <textarea id="translate-input" class="text-input"
+              placeholder="Paste the text you want translated…"></textarea>
+            <div class="actions">
+              <button type="button" class="gen-btn gen-action" id="translate-btn">Translate ✦</button>
+            </div>
+          </div>
+          <div class="loading-card hidden" id="translate-loading">
+            <div class="spinner"><span></span><span></span><span></span></div>
+            <div>
+              <div class="loading-title">Translating…</div>
+              <div class="loading-sub">Keeping the tone and meaning intact.</div>
+            </div>
+          </div>
+          <div class="panel result-panel hidden" id="translate-result-panel">
+            <p class="label">Translation</p>
+            <div class="ai-output-card">
+              <p id="translate-result-text"></p>
+            </div>
+            <div class="export-row">
+              <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
+                DOCX</button>
+              <button type="button" class="export-btn" data-fmt="txt"><span class="export-badge txt">TXT</span>
+                TXT</button>
+              <button type="button" class="icon-btn copy-btn">Copy</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Email Draft ────────────────────────────────────────────── -->
+        <section class="view" id="view-email" data-view="email">
+          <div class="panel">
+            <p class="label">Draft a job application email</p>
+            <div class="field-grid">
+              <div class="field">
+                <label for="email-role">Role / position</label>
+                <input type="text" id="email-role" placeholder="e.g. Frontend Developer">
+              </div>
+              <div class="field">
+                <label for="email-company">Company (optional)</label>
+                <input type="text" id="email-company" placeholder="e.g. Acme Inc.">
+              </div>
+            </div>
+            <div class="field">
+              <label for="email-notes">Key points to include</label>
+              <textarea id="email-notes" class="text-input" style="min-height:120px; margin-bottom:0;"
+                placeholder="Your experience, why you're a fit, availability…"></textarea>
+            </div>
+            <div class="actions" style="margin-top:18px;">
+              <button type="button" class="gen-btn gen-action" id="email-btn">Draft Email ✦</button>
+            </div>
+          </div>
+          <div class="loading-card hidden" id="email-loading">
+            <div class="spinner"><span></span><span></span><span></span></div>
+            <div>
+              <div class="loading-title">Drafting your email…</div>
+              <div class="loading-sub">Keeping it professional and concise.</div>
+            </div>
+          </div>
+          <div class="panel result-panel hidden" id="email-result-panel">
+            <p class="label">Email Draft</p>
+            <div class="ai-output-card">
+              <p id="email-result-text"></p>
+            </div>
+            <div class="export-row">
+              <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
+                DOCX</button>
+              <button type="button" class="export-btn" data-fmt="pdf"><span class="export-badge pdf">PDF</span>
+                PDF</button>
+              <button type="button" class="icon-btn copy-btn">Copy</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Blog Writer ────────────────────────────────────────────── -->
+        <section class="view" id="view-blog" data-view="blog">
+          <div class="panel">
+            <p class="label">Write a blog post</p>
+            <div class="field">
+              <label for="blog-topic">Topic</label>
+              <input type="text" id="blog-topic" placeholder="e.g. The future of remote work">
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="blog-tone">Tone</label>
+                <select id="blog-tone">
+                  <option>Informative</option>
+                  <option>Casual</option>
+                  <option>Persuasive</option>
+                  <option>Technical</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="blog-length">Length</label>
+                <select id="blog-length">
+                  <option>Short (~300 words)</option>
+                  <option selected>Medium (~600 words)</option>
+                  <option>Long (~1000+ words)</option>
+                </select>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:4px;">
+              <button type="button" class="gen-btn gen-action" id="blog-btn">Write Blog ✦</button>
+            </div>
+          </div>
+          <div class="loading-card hidden" id="blog-loading">
+            <div class="spinner"><span></span><span></span><span></span></div>
+            <div>
+              <div class="loading-title">Writing your blog post…</div>
+              <div class="loading-sub">Structuring it with headings and flow.</div>
+            </div>
+          </div>
+          <div class="panel result-panel hidden" id="blog-result-panel">
+            <p class="label">Blog Post</p>
+            <div class="ai-output-card">
+              <p id="blog-result-text"></p>
+            </div>
+            <div class="export-row">
+              <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
+                DOCX</button>
+              <button type="button" class="export-btn" data-fmt="pdf"><span class="export-badge pdf">PDF</span>
+                PDF</button>
+              <button type="button" class="icon-btn copy-btn">Copy</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── History ────────────────────────────────────────────────── -->
+        <section class="view" id="view-history" data-view="history">
+          <div class="panel">
+            <div class="history-head">
+              <p class="label" style="margin-bottom:0;">Your generations</p>
+              <div class="history-filters" id="history-filters">
+                <button type="button" class="chip-toggle active" data-filter="all">All</button>
+                <button type="button" class="chip-toggle" data-filter="custom">Chat</button>
+                <button type="button" class="chip-toggle" data-filter="summary">Summarize</button>
+                <button type="button" class="chip-toggle" data-filter="translate">Translate</button>
+                <button type="button" class="chip-toggle" data-filter="email">Email</button>
+                <button type="button" class="chip-toggle" data-filter="blog">Blog</button>
+                <button type="button" class="chip-toggle" data-filter="code">Code</button>
+              </div>
+            </div>
+            <div class="history-list" id="history-list">
+              <p class="empty-note">Loading…</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Settings ───────────────────────────────────────────────── -->
+        <section class="view" id="view-settings" data-view="settings">
+          <div class="panel settings-panel">
+            <div class="settings-profile">
+              <div class="settings-avatar" id="settings-avatar">?</div>
+              <div>
+                <p class="settings-name" id="settings-name">—</p>
+                <p class="settings-email" id="settings-email">—</p>
+              </div>
+            </div>
+
+            <div class="settings-block" style="border-top:none; padding-top:0;">
+              <p class="label">Usage</p>
+              <div class="usage-bar large">
+                <div class="usage-bar-fill" id="settings-usage-fill"></div>
+              </div>
+              <p class="usage-caption" id="settings-usage-caption">0 / 3 generations used</p>
+              <p class="settings-hint">Reached your limit? Ask an admin to reset your account to continue
+                generating.</p>
+            </div>
+
+            <div class="settings-block">
+              <p class="label">AI Model</p>
+              <div class="settings-row">
+                <span>Provider</span>
+                <span id="settings-model">Gemini 2.5 Flash</span>
+              </div>
+            </div>
+
+            <div class="settings-block">
+              <p class="label">Data</p>
+              <button type="button" class="danger-btn" id="settings-clear-history">Clear all history</button>
+            </div>
+
+            <a href="/logout" class="logout-btn-full">Sign out</a>
+          </div>
+        </section>
+
+      </div>
+    </div>
   </div>
 
   <!-- Toast zone -->
@@ -1074,144 +2112,619 @@
 
   <!-- ─── Scripts ───────────────────────────────────────────────────────── -->
   <script>
-    /* ── Mode selector (new UI helper — syncs hidden <select>) ───────────── */
-    function selectMode(value) {
-      document.getElementById("mode").value = value;
-      document.querySelectorAll(".mode-btn").forEach(function (btn) {
-        btn.classList.toggle("active", btn.dataset.value === value);
+    const state = {
+      me: null,
+      limitReached: false,
+      historyItems: [],
+      historyFilter: 'all',
+      chatMode: 'custom',
+      chatAttachment: null,
+      docAttachment: null,
+    };
+
+    const MODE_LABELS = {
+      custom: 'Chat',
+      summary: 'Summarize',
+      translate: 'Translate',
+      email: 'Email',
+      blog: 'Blog',
+      code: 'Code',
+    };
+
+    const VIEW_META = {
+      chat: { title: 'Chat', subtitle: "Ask anything, brainstorm, or attach a document to discuss it." },
+      documents: { title: 'Documents', subtitle: 'Upload a PDF, Word, or Excel file and get an instant summary.' },
+      summarize: { title: 'Summarize', subtitle: 'Paste any text and get a clear, concise summary.' },
+      translate: { title: 'Translate', subtitle: 'Translate text into another language, instantly.' },
+      email: { title: 'Email Draft', subtitle: 'Generate a polished, professional email in seconds.' },
+      blog: { title: 'Blog Writer', subtitle: 'Turn a topic into a structured, ready-to-publish blog post.' },
+      history: { title: 'History', subtitle: "Review and manage everything you've generated." },
+      settings: { title: 'Settings', subtitle: 'Your account, usage, and preferences.' },
+    };
+
+    /* ── Toast system ─────────────────────────────────────────────────── */
+    function showToast(msg, icon) {
+      icon = icon || 'ℹ️';
+      const zone = document.getElementById('toast-zone');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = '<span class="t-icon">' + icon + '</span><span></span>';
+      toast.querySelector('span:last-child').textContent = msg;
+      zone.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('out');
+        setTimeout(() => toast.remove(), 280);
+      }, 2800);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    function truncateText(str, n) {
+      if (!str) return '';
+      return str.length > n ? str.slice(0, n) + '…' : str;
+    }
+
+    function copyText(text) {
+      if (!text) return showToast('Nothing to copy.', '⚠️');
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('Copied to clipboard!', '📋'))
+        .catch(() => showToast('Copy failed.', '❌'));
+    }
+
+    /* ── View switching ───────────────────────────────────────────────── */
+    function switchView(view) {
+      if (!VIEW_META[view]) view = 'chat';
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.dataset.view === view));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+      document.getElementById('view-title').textContent = VIEW_META[view].title;
+      document.getElementById('view-subtitle').textContent = VIEW_META[view].subtitle;
+      document.body.classList.remove('sidebar-open');
+      if (view === 'history') loadHistory();
+      if (window.location.hash !== '#' + view) window.history.replaceState(null, '', '#' + view);
+    }
+
+    function bindNav() {
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+      });
+      document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+        document.body.classList.toggle('sidebar-open');
+      });
+      document.getElementById('sidebar-scrim').addEventListener('click', () => {
+        document.body.classList.remove('sidebar-open');
       });
     }
 
-    /* ── Loading text cycle ───────────────────────────────────────────────── */
-    var loadingInterval;
-
-    function startLoadingTextCycle() {
-      var messages = ["Initializing...", "Generating response...", "Finalizing..."];
-      var index = 0;
-      var loadingText = document.getElementById("loading-text");
-
-      loadingText.innerText = messages[index];
-      loadingInterval = setInterval(function () {
-        index = (index + 1) % messages.length;
-        loadingText.innerText = messages[index];
-      }, 3000);
+    /* ── Account / usage ──────────────────────────────────────────────── */
+    function formatModelName(model) {
+      if (model === 'gemini-2.5-flash') return 'Gemini 2.5 Flash';
+      return model || 'Gemini';
     }
 
-    function stopLoadingTextCycle() {
-      clearInterval(loadingInterval);
+    function updateUsageUI(remaining, limit) {
+      limit = limit || (state.me && state.me.limit) || 3;
+      remaining = Math.max(0, remaining || 0);
+      const used = Math.max(0, limit - remaining);
+      const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+
+      document.querySelectorAll('.usage-bar-fill').forEach(el => { el.style.width = pct + '%'; });
+
+      const limitPill = document.getElementById('limit-pill');
+      limitPill.textContent = remaining + ' generation' + (remaining === 1 ? '' : 's') + ' left';
+      limitPill.classList.toggle('low', remaining <= 1);
+
+      document.getElementById('usage-mini-count').textContent = remaining + ' / ' + limit;
+      document.getElementById('settings-usage-caption').textContent = used + ' / ' + limit + ' generations used';
+
+      state.limitReached = remaining <= 0;
+      lockGeneration(state.limitReached);
     }
 
-    /* ── Generate ─────────────────────────────────────────────────────────── */
-    async function generate() {
-      var prompt = document.getElementById("prompt").value.trim();
-      var mode = document.getElementById("mode").value;
-      var outputText = document.getElementById("output-text");
-      var output = document.getElementById("output");
-      var loading = document.getElementById("loading");
-      var copy = document.getElementById("copy");
-      var clear = document.getElementById("clear");
-      var AvailableCount = document.getElementById("available-count");
+    function lockGeneration(locked) {
+      document.querySelectorAll('.gen-action').forEach(btn => { btn.disabled = locked; });
+      document.getElementById('limit-banner').classList.toggle('hidden', !locked);
+    }
 
-      if (!mode) return showToast("Please select a mode.", "⚠️");
-      if (!prompt) return showToast("Please enter a prompt.", "⚠️");
+    async function loadMe() {
+      try {
+        const res = await fetch('/api/me');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const data = await res.json();
+        state.me = data;
 
-      outputText.innerText = "";
-      output.classList.remove("has-content");
-      document.getElementById("out-empty").classList.remove("fade-out");
-      loading.classList.remove("hidden");
-      startLoadingTextCycle(); // Start text cycle
+        const displayName = data.name || data.email || 'Signed in';
+        document.getElementById('user-name').textContent = displayName;
+        document.getElementById('user-email').textContent = data.email || '';
+        document.getElementById('settings-name').textContent = displayName;
+        document.getElementById('settings-email').textContent = data.email || '';
 
-      var res = await fetch("/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt, mode: mode })
+        const initial = displayName.trim().charAt(0).toUpperCase() || '?';
+        document.getElementById('user-avatar').textContent = initial;
+        document.getElementById('settings-avatar').textContent = initial;
+
+        const modelName = formatModelName(data.model);
+        document.getElementById('model-pill-text').textContent = modelName;
+        document.getElementById('settings-model').textContent = modelName;
+
+        updateUsageUI(data.remaining, data.limit);
+      } catch (e) {
+        console.error('Failed to load account info', e);
+      }
+    }
+
+    /* ── Generation ────────────────────────────────────────────────────── */
+    async function callGenerate(mode, prompt, extra) {
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ prompt: prompt, mode: mode }, extra || {}))
+      });
+      if (res.status === 401) { window.location.href = '/login'; return null; }
+      const data = await res.json().catch(() => ({}));
+      if (typeof data.remaining === 'number') updateUsageUI(data.remaining, state.me ? state.me.limit : 3);
+      if (!res.ok && !data.response) throw new Error('Server error. Please try again.');
+      return data;
+    }
+
+    function wireGenerateAction(cfg) {
+      const btn = document.getElementById(cfg.btnId);
+      btn.addEventListener('click', async () => {
+        const promptText = cfg.getPrompt();
+        if (promptText === null) return;
+        if (state.limitReached) return showToast('Generation limit reached.', '🚫');
+
+        const loading = document.getElementById(cfg.loadingId);
+        const resultPanel = document.getElementById(cfg.resultPanelId);
+        const resultText = document.getElementById(cfg.resultTextId);
+
+        btn.disabled = true;
+        loading.classList.remove('hidden');
+        resultPanel.classList.add('hidden');
+
+        try {
+          const extra = cfg.getExtra ? cfg.getExtra() : {};
+          const data = await callGenerate(cfg.mode, promptText, extra);
+          if (data === null) return;
+
+          resultText.textContent = data.response;
+          resultPanel.dataset.content = data.response;
+          resultPanel.dataset.title = cfg.titleGetter ? cfg.titleGetter() : 'Smart AI Output';
+          resultPanel.classList.remove('hidden');
+
+          showToast(data.limitExceeded ? "That was your last generation for now." : 'Generated successfully!', data.limitExceeded ? '⚠️' : '✅');
+        } catch (e) {
+          showToast(e.message || 'Something went wrong.', '❌');
+        } finally {
+          loading.classList.add('hidden');
+          btn.disabled = state.limitReached;
+        }
+      });
+    }
+
+    /* ── Export / copy (delegated) ────────────────────────────────────── */
+    async function exportContent(format, content, title) {
+      if (!content) return showToast('Nothing to export yet.', '⚠️');
+      try {
+        const res = await fetch('/api/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: content, format: format, title: title })
+        });
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Export failed');
+        }
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : (title || 'smart-ai-output') + '.' + format;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Download started.', '⬇️');
+      } catch (e) {
+        showToast(e.message || 'Export failed.', '❌');
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const expBtn = e.target.closest('.export-btn');
+      if (expBtn) {
+        const panel = expBtn.closest('.result-panel');
+        exportContent(expBtn.dataset.fmt, panel.dataset.content || '', panel.dataset.title || 'Smart AI Output');
+        return;
+      }
+      const copyBtn = e.target.closest('.copy-btn');
+      if (copyBtn) {
+        const panel = copyBtn.closest('.result-panel');
+        copyText(panel.dataset.content || '');
+      }
+    });
+
+    /* ── Document extraction (shared) ─────────────────────────────────── */
+    async function extractDocument(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/documents/extract', { method: 'POST', body: formData });
+        if (res.status === 401) { window.location.href = '/login'; return { success: false }; }
+        return await res.json();
+      } catch (e) {
+        return { success: false, message: 'Upload failed.' };
+      }
+    }
+
+    /* ── Chat view ─────────────────────────────────────────────────────── */
+    function appendChatMessage(role, text) {
+      const list = document.getElementById('chat-messages');
+      const row = document.createElement('div');
+      row.className = 'chat-row chat-row-' + role;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'chat-avatar';
+      avatar.textContent = role === 'user'
+        ? ((state.me && state.me.name ? state.me.name : 'U').trim().charAt(0).toUpperCase() || 'U')
+        : '✦';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.textContent = text;
+
+      if (role === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
+      else { row.appendChild(avatar); row.appendChild(bubble); }
+
+      list.appendChild(row);
+      const scroller = document.getElementById('chat-scroll');
+      scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    function appendTypingIndicator() {
+      const list = document.getElementById('chat-messages');
+      const row = document.createElement('div');
+      row.className = 'chat-row chat-row-ai';
+      row.innerHTML = '<div class="chat-avatar">✦</div><div class="chat-bubble chat-typing"><span></span><span></span><span></span></div>';
+      list.appendChild(row);
+      const scroller = document.getElementById('chat-scroll');
+      scroller.scrollTop = scroller.scrollHeight;
+      return row;
+    }
+
+    function removeTypingIndicator(row) {
+      if (row && row.parentNode) row.parentNode.removeChild(row);
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      let text = input.value.trim();
+      if (!text && state.chatAttachment) text = 'Summarize this document and give key points.';
+      if (!text) return showToast('Type a message first.', '⚠️');
+      if (state.limitReached) return showToast('Generation limit reached.', '🚫');
+
+      document.getElementById('chat-welcome').classList.add('hidden');
+      appendChatMessage('user', text);
+      input.value = '';
+      input.style.height = 'auto';
+
+      let promptToSend = text;
+      let mode = state.chatMode;
+      if (state.chatAttachment) {
+        promptToSend = 'Document "' + state.chatAttachment.filename + '":\n"""\n' + state.chatAttachment.text + '\n"""\n\nUser request: ' + text;
+        mode = 'summary';
+        state.chatAttachment = null;
+        document.getElementById('attach-chip').classList.add('hidden');
+      }
+
+      const typingRow = appendTypingIndicator();
+      const sendBtn = document.getElementById('chat-send-btn');
+      sendBtn.disabled = true;
+
+      try {
+        const data = await callGenerate(mode, promptToSend);
+        removeTypingIndicator(typingRow);
+        if (data === null) return;
+        appendChatMessage('ai', data.response);
+        if (data.limitExceeded) showToast('That was your last generation for now.', '⚠️');
+      } catch (e) {
+        removeTypingIndicator(typingRow);
+        appendChatMessage('ai', 'Sorry, something went wrong generating a response.');
+        showToast(e.message || 'Generation failed.', '❌');
+      } finally {
+        sendBtn.disabled = state.limitReached;
+      }
+    }
+
+    function bindComposer() {
+      const chips = document.querySelectorAll('[data-chat-mode]');
+      chips.forEach(chip => chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        state.chatMode = chip.dataset.chatMode;
+      }));
+
+      const input = document.getElementById('chat-input');
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+      input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 160) + 'px';
       });
 
-      if (!res.ok) {
-        stopLoadingTextCycle();
-        loading.classList.add("hidden");
-        showToast("Server error: " + res.status, "❌");
+      document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
+
+      document.getElementById('chat-attach-btn').addEventListener('click', () => {
+        document.getElementById('chat-file-input').click();
+      });
+
+      document.getElementById('chat-file-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        showToast('Reading document…', '📎');
+        const result = await extractDocument(file);
+        if (!result.success) return showToast(result.message || 'Could not read file.', '❌');
+        state.chatAttachment = { filename: result.filename, text: result.text };
+        document.getElementById('attach-chip-name').textContent = result.filename;
+        document.getElementById('attach-chip').classList.remove('hidden');
+        showToast('Document attached.', '📎');
+      });
+
+      document.getElementById('attach-chip-remove').addEventListener('click', () => {
+        state.chatAttachment = null;
+        document.getElementById('attach-chip').classList.add('hidden');
+      });
+    }
+
+    /* ── Documents view ────────────────────────────────────────────────── */
+    async function handleDocFile(file) {
+      document.getElementById('doc-summarize-btn').disabled = true;
+      showToast('Reading document…', '📄');
+      const result = await extractDocument(file);
+      if (!result.success) return showToast(result.message || 'Could not read file.', '❌');
+
+      state.docAttachment = { filename: result.filename, text: result.text };
+      document.getElementById('doc-file-name').textContent = result.filename;
+      document.getElementById('doc-file-meta').textContent =
+        (result.truncated ? 'Truncated to fit the model · ' : '') + result.text.length.toLocaleString() + ' characters extracted';
+      document.getElementById('doc-extracted-text').value = result.text;
+      document.getElementById('doc-file-preview').classList.remove('hidden');
+      document.getElementById('doc-summarize-btn').disabled = state.limitReached;
+      showToast('Document ready.', '✅');
+    }
+
+    function bindDocuments() {
+      const dropzone = document.getElementById('doc-dropzone');
+      const fileInput = document.getElementById('doc-file-input');
+
+      dropzone.addEventListener('click', () => fileInput.click());
+      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        if (e.dataTransfer.files[0]) handleDocFile(e.dataTransfer.files[0]);
+      });
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleDocFile(e.target.files[0]);
+        e.target.value = '';
+      });
+      document.getElementById('doc-file-remove').addEventListener('click', () => {
+        state.docAttachment = null;
+        document.getElementById('doc-file-preview').classList.add('hidden');
+        document.getElementById('doc-summarize-btn').disabled = true;
+        document.getElementById('doc-result-panel').classList.add('hidden');
+      });
+
+      wireGenerateAction({
+        btnId: 'doc-summarize-btn',
+        loadingId: 'doc-loading',
+        resultPanelId: 'doc-result-panel',
+        resultTextId: 'doc-result-text',
+        mode: 'summary',
+        getPrompt: () => {
+          if (!state.docAttachment) { showToast('Upload a document first.', '⚠️'); return null; }
+          return state.docAttachment.text;
+        },
+        titleGetter: () => (state.docAttachment ? state.docAttachment.filename.replace(/\.[^.]+$/, '') : 'Document Summary'),
+      });
+    }
+
+    /* ── History view ──────────────────────────────────────────────────── */
+    function bindHistory() {
+      document.querySelectorAll('#history-filters .chip-toggle').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('#history-filters .chip-toggle').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state.historyFilter = chip.dataset.filter;
+          renderHistory();
+        });
+      });
+    }
+
+    async function loadHistory() {
+      const list = document.getElementById('history-list');
+      list.innerHTML = '<p class="empty-note">Loading…</p>';
+      try {
+        const res = await fetch('/api/history');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const data = await res.json();
+        state.historyItems = data.items || [];
+        renderHistory();
+      } catch (e) {
+        list.innerHTML = '<p class="empty-note">Could not load history.</p>';
+      }
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('history-list');
+      const items = state.historyFilter === 'all'
+        ? state.historyItems
+        : state.historyItems.filter(i => i.mode === state.historyFilter);
+
+      if (!items.length) {
+        list.innerHTML = '<p class="empty-note">Nothing here yet.</p>';
         return;
       }
 
-      var data = await res.json();
-      stopLoadingTextCycle(); // Stop text cycle
-      copy.classList.remove("hidden");
-      clear.classList.remove("hidden");
-      loading.classList.add("hidden");
-      outputText.classList.remove("hidden");
-      AvailableCount.classList.remove("hidden");
-      document.getElementById("out-empty").classList.add("fade-out");
-      output.classList.add("has-content");
+      list.innerHTML = '';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'history-item';
+        const when = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+        card.innerHTML =
+          '<button type="button" class="history-item-head">' +
+          '<span class="history-mode-badge">' + escapeHtml(MODE_LABELS[item.mode] || item.mode) + '</span>' +
+          '<span class="history-item-prompt">' + escapeHtml(truncateText(item.prompt, 90)) + '</span>' +
+          '<span class="history-item-time">' + escapeHtml(when) + '</span>' +
+          '<svg class="history-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+          '</button>' +
+          '<div class="history-item-body hidden">' +
+          '<p class="history-item-label">Prompt</p>' +
+          '<p class="history-item-text">' + escapeHtml(item.prompt) + '</p>' +
+          '<p class="history-item-label">Response</p>' +
+          '<p class="history-item-text">' + escapeHtml(item.response) + '</p>' +
+          '<div class="history-item-actions">' +
+          '<button type="button" class="icon-btn history-copy">Copy response</button>' +
+          '<button type="button" class="icon-btn history-delete">Delete</button>' +
+          '</div></div>';
 
-      outputText.innerText = data.response;
+        card.querySelector('.history-item-head').addEventListener('click', () => {
+          card.querySelector('.history-item-body').classList.toggle('hidden');
+          card.classList.toggle('expanded');
+        });
+        card.querySelector('.history-copy').addEventListener('click', (e) => {
+          e.stopPropagation();
+          copyText(item.response);
+        });
+        card.querySelector('.history-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteHistoryItem(item.id);
+        });
 
-      // Apply visibility and specific mode styles
-      outputText.classList.remove("hidden");
-      setTimeout(() => outputText.classList.add("show"), 10);
-
-      if (mode === "code") {
-        outputText.classList.add("code-mode");
-      } else {
-        outputText.classList.remove("code-mode");
-      }
-
-      console.log(data);
-
-      document.getElementById("available-count").innerText = "Remaining Generations: " + data.remaining;
-
-      if (data.limitExceeded) {
-        showToast("Generation limit reached.", "🚫");
-      } else {
-        showToast("Content generated successfully!", "✅");
-      }
-    }
-
-    /* ── Keyboard shortcut — Enter to generate ────────────────────────────── */
-    document.addEventListener("DOMContentLoaded", function () {
-      var promptField = document.getElementById("prompt");
-      promptField.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          generate();
-        }
+        list.appendChild(card);
       });
+    }
+
+    async function deleteHistoryItem(id) {
+      try {
+        const res = await fetch('/api/history/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        state.historyItems = state.historyItems.filter(i => i.id !== id);
+        renderHistory();
+        showToast('Entry deleted.', '🗑️');
+      } catch (e) {
+        showToast('Could not delete entry.', '❌');
+      }
+    }
+
+    /* ── Settings view ─────────────────────────────────────────────────── */
+    function bindSettings() {
+      document.getElementById('settings-clear-history').addEventListener('click', async () => {
+        if (!state.historyItems.length) await loadHistory();
+        if (!state.historyItems.length) return showToast('No history to clear.', 'ℹ️');
+        if (!confirm('Delete all saved history? This cannot be undone.')) return;
+
+        const ids = state.historyItems.map(i => i.id);
+        await Promise.all(ids.map(id => fetch('/api/history/' + encodeURIComponent(id), { method: 'DELETE' })));
+        state.historyItems = [];
+        renderHistory();
+        showToast('History cleared.', '🗑️');
+      });
+    }
+
+    /* ── Wire the single-shot generation views ────────────────────────── */
+    function bindGenerationViews() {
+      wireGenerateAction({
+        btnId: 'summarize-btn',
+        loadingId: 'summarize-loading',
+        resultPanelId: 'summarize-result-panel',
+        resultTextId: 'summarize-result-text',
+        mode: 'summary',
+        getPrompt: () => {
+          const v = document.getElementById('summarize-input').value.trim();
+          if (!v) { showToast('Paste some text first.', '⚠️'); return null; }
+          return v;
+        },
+        titleGetter: () => 'Text Summary',
+      });
+
+      wireGenerateAction({
+        btnId: 'translate-btn',
+        loadingId: 'translate-loading',
+        resultPanelId: 'translate-result-panel',
+        resultTextId: 'translate-result-text',
+        mode: 'translate',
+        getPrompt: () => {
+          const v = document.getElementById('translate-input').value.trim();
+          if (!v) { showToast('Enter text to translate.', '⚠️'); return null; }
+          return v;
+        },
+        getExtra: () => ({ targetLang: document.getElementById('translate-lang').value }),
+        titleGetter: () => 'Translation - ' + document.getElementById('translate-lang').value,
+      });
+
+      wireGenerateAction({
+        btnId: 'email-btn',
+        loadingId: 'email-loading',
+        resultPanelId: 'email-result-panel',
+        resultTextId: 'email-result-text',
+        mode: 'email',
+        getPrompt: () => {
+          const role = document.getElementById('email-role').value.trim();
+          const company = document.getElementById('email-company').value.trim();
+          const notes = document.getElementById('email-notes').value.trim();
+          if (!role && !notes) { showToast('Add a role or some notes first.', '⚠️'); return null; }
+          let p = 'Role: ' + (role || 'Not specified');
+          if (company) p += '\nCompany: ' + company;
+          if (notes) p += '\nKey points: ' + notes;
+          return p;
+        },
+        titleGetter: () => 'Email Draft',
+      });
+
+      wireGenerateAction({
+        btnId: 'blog-btn',
+        loadingId: 'blog-loading',
+        resultPanelId: 'blog-result-panel',
+        resultTextId: 'blog-result-text',
+        mode: 'blog',
+        getPrompt: () => {
+          const topic = document.getElementById('blog-topic').value.trim();
+          if (!topic) { showToast('Enter a topic first.', '⚠️'); return null; }
+          const tone = document.getElementById('blog-tone').value;
+          const length = document.getElementById('blog-length').value;
+          return 'Topic: ' + topic + '\nTone: ' + tone + '\nTarget length: ' + length;
+        },
+        titleGetter: () => (document.getElementById('blog-topic').value.trim() || 'Blog Post'),
+      });
+    }
+
+    /* ── Init ──────────────────────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      bindNav();
+      bindComposer();
+      bindDocuments();
+      bindHistory();
+      bindSettings();
+      bindGenerationViews();
+      loadMe();
+
+      const initialView = (window.location.hash || '').replace('#', '');
+      switchView(VIEW_META[initialView] ? initialView : 'chat');
     });
-
-    /* ── Copy output ──────────────────────────────────────────────────────── */
-    function copyOutput() {
-      var text = document.getElementById("output").innerText;
-      if (!text) return;
-      navigator.clipboard.writeText(text);
-      showToast("Copied to clipboard!", "📋");
-    }
-
-    /* ── Clear output ─────────────────────────────────────────────────────── */
-    function clearOutput() {
-      var outputText = document.getElementById("output-text");
-      outputText.classList.add("hidden");
-      outputText.classList.remove("show");
-      outputText.classList.remove("code-mode");
-      document.getElementById("copy").classList.add("hidden");
-      document.getElementById("clear").classList.add("hidden");
-      document.getElementById("output").classList.remove("has-content");
-      document.getElementById("out-empty").classList.remove("fade-out");
-      showToast("Output cleared.", "🗑️");
-    }
-
-    /* ── Toast system ─────────────────────────────────────────────────────── */
-    function showToast(msg, icon) {
-      icon = icon || "ℹ️";
-      var zone = document.getElementById("toast-zone");
-      var toast = document.createElement("div");
-      toast.className = "toast";
-      toast.innerHTML = '<span class="t-icon">' + icon + '</span><span>' + msg + '</span>';
-      zone.appendChild(toast);
-      setTimeout(function () {
-        toast.classList.add("out");
-        setTimeout(function () { toast.remove(); }, 280);
-      }, 2800);
-    }
   </script>
 </body>
 
