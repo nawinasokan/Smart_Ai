@@ -5,17 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart AI Assistant</title>
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    (function () {
+      try {
+        var saved = localStorage.getItem('smart-ai-theme');
+        var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <style>
     /* ─── Design Tokens ──────────────────────────────────────────────────── */
+    /* To add a new theme: duplicate the [data-theme="light"] block below with
+       a new attribute value, then flip the toggle in #theme-switch to match. */
     :root {
       --bg-base: #080a16;
-      --bg-card: rgba(255, 255, 255, 0.04);
-      --bg-card-hover: rgba(255, 255, 255, 0.07);
-      --bg-sidebar: rgba(10, 12, 24, 0.65);
-      --bg-output: rgba(13, 15, 28, 0.8);
-      --border: rgba(255, 255, 255, 0.08);
+      --surface-rgb: 255, 255, 255;
+      --panel-strong-rgb: 10, 12, 24;
+      --bg-card: rgba(var(--surface-rgb), 0.04);
+      --bg-card-hover: rgba(var(--surface-rgb), 0.07);
+      --bg-sidebar: rgba(var(--panel-strong-rgb), 0.65);
+      --bg-output: rgba(var(--panel-strong-rgb), 0.8);
+      --border: rgba(var(--surface-rgb), 0.08);
       --border-lit: rgba(99, 102, 241, 0.5);
       --accent: #6366f1;
       --accent-2: #8b5cf6;
@@ -26,12 +42,43 @@
       --green: #10b981;
       --red: #ef4444;
       --amber: #f59e0b;
+      --indigo-text: #a5b4fc;
+      --indigo-text-strong: #e0e7ff;
+      --green-text: #6ee7b7;
+      --amber-text: #fcd34d;
+      --red-text: #fca5a5;
+      --red-text-strong: #f87171;
+      --grid-line-rgb: 255, 255, 255;
+      --orb-opacity: 0.12;
+      --code-box-bg: rgba(0, 0, 0, 0.2);
       --r-sm: 10px;
       --r-md: 16px;
       --r-lg: 24px;
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
       --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
       --sidebar-w: 268px;
+      color-scheme: dark;
+    }
+
+    /* ─── Light Theme Overrides ──────────────────────────────────────────── */
+    :root[data-theme="light"] {
+      --bg-base: #f1f4fa;
+      --surface-rgb: 15, 23, 42;
+      --panel-strong-rgb: 255, 255, 255;
+      --border-lit: rgba(99, 102, 241, 0.35);
+      --text-1: #0f172a;
+      --text-2: #475569;
+      --text-3: #7a8aa3;
+      --indigo-text: #4338ca;
+      --indigo-text-strong: #3730a3;
+      --green-text: #047857;
+      --amber-text: #92400e;
+      --red-text: #b91c1c;
+      --red-text-strong: #dc2626;
+      --grid-line-rgb: 15, 23, 42;
+      --orb-opacity: 0.07;
+      --code-box-bg: rgba(15, 23, 42, 0.05);
+      color-scheme: light;
     }
 
     *,
@@ -75,7 +122,7 @@
       position: absolute;
       border-radius: 50%;
       filter: blur(90px);
-      opacity: 0.12;
+      opacity: var(--orb-opacity);
     }
 
     .orb-1 {
@@ -155,8 +202,8 @@
       z-index: 0;
       pointer-events: none;
       background-image:
-        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+        linear-gradient(rgba(var(--surface-rgb), 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--surface-rgb), 0.018) 1px, transparent 1px);
       background-size: 48px 48px;
     }
 
@@ -257,14 +304,14 @@
     }
 
     .nav-item:hover {
-      background: rgba(255, 255, 255, 0.045);
+      background: rgba(var(--surface-rgb), 0.045);
       color: var(--text-1);
     }
 
     .nav-item.active {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(139, 92, 246, 0.12));
       border-color: rgba(99, 102, 241, 0.3);
-      color: #e0e7ff;
+      color: var(--indigo-text-strong);
       box-shadow: 0 2px 14px rgba(99, 102, 241, 0.15);
     }
 
@@ -283,7 +330,7 @@
 
     .usage-mini {
       padding: 12px 13px;
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(var(--surface-rgb), 0.035);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
     }
@@ -306,12 +353,12 @@
     .usage-mini-count {
       font-size: 11.5px;
       font-weight: 700;
-      color: #a5b4fc;
+      color: var(--indigo-text);
     }
 
     .usage-bar {
       height: 6px;
-      background: rgba(255, 255, 255, 0.07);
+      background: rgba(var(--surface-rgb), 0.07);
       border-radius: 99px;
       overflow: hidden;
     }
@@ -334,7 +381,7 @@
       align-items: center;
       gap: 10px;
       padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(var(--surface-rgb), 0.035);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
     }
@@ -382,7 +429,7 @@
       padding: 9px 12px;
       background: rgba(239, 68, 68, 0.08);
       border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
+      color: var(--red-text);
       font-size: 12.5px;
       font-weight: 600;
       border-radius: var(--r-sm);
@@ -394,7 +441,7 @@
     .logout-link:hover {
       background: rgba(239, 68, 68, 0.16);
       border-color: rgba(239, 68, 68, 0.4);
-      color: #f87171;
+      color: var(--red-text-strong);
     }
 
     .logout-link svg {
@@ -411,7 +458,7 @@
       align-items: center;
       gap: 10px;
       padding: 14px 16px;
-      background: rgba(8, 10, 22, 0.9);
+      background: rgba(var(--panel-strong-rgb), 0.9);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
@@ -421,7 +468,7 @@
       height: 34px;
       display: grid;
       place-items: center;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(var(--surface-rgb), 0.05);
       border: 1px solid var(--border);
       border-radius: 9px;
       color: var(--text-1);
@@ -487,19 +534,19 @@
     .model-pill {
       background: rgba(99, 102, 241, 0.1);
       border: 1px solid rgba(99, 102, 241, 0.22);
-      color: #a5b4fc;
+      color: var(--indigo-text);
     }
 
     .limit-pill {
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.2);
-      color: #6ee7b7;
+      color: var(--green-text);
     }
 
     .limit-pill.low {
       background: rgba(245, 158, 11, 0.1);
       border-color: rgba(245, 158, 11, 0.25);
-      color: #fcd34d;
+      color: var(--amber-text);
     }
 
     .limit-pill::before {
@@ -517,13 +564,81 @@
       box-shadow: 0 0 8px var(--amber);
     }
 
+    /* ─── Theme toggle (topbar icon button) ───────────────────────────────── */
+    .theme-toggle-btn {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      background: rgba(var(--surface-rgb), 0.04);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      flex-shrink: 0;
+    }
+
+    .theme-toggle-btn:hover {
+      color: var(--text-1);
+      border-color: rgba(99, 102, 241, 0.35);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .theme-icon-sun {
+      display: none;
+    }
+
+    :root[data-theme="light"] .theme-icon-moon {
+      display: none;
+    }
+
+    :root[data-theme="light"] .theme-icon-sun {
+      display: block;
+    }
+
+    /* ─── Theme switch (Settings view) ───────────────────────────────────── */
+    .theme-switch {
+      display: flex;
+      gap: 4px;
+      padding: 3px;
+      background: rgba(var(--surface-rgb), 0.04);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+    }
+
+    .theme-switch-opt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      background: none;
+      border: none;
+      border-radius: 99px;
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s var(--ease);
+    }
+
+    .theme-switch-opt:hover {
+      color: var(--text-1);
+    }
+
+    .theme-switch-opt.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+    }
+
     .limit-banner {
       margin: 0 32px 0;
       padding: 12px 18px;
       background: rgba(245, 158, 11, 0.08);
       border: 1px solid rgba(245, 158, 11, 0.25);
       border-radius: var(--r-sm);
-      color: #fcd34d;
+      color: var(--amber-text);
       font-size: 13px;
       font-weight: 500;
       display: flex;
@@ -622,7 +737,7 @@
     .field select {
       width: 100%;
       padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.025);
+      background: rgba(var(--surface-rgb), 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       color: var(--text-1);
@@ -651,7 +766,7 @@
     .text-input {
       width: 100%;
       min-height: 150px;
-      background: rgba(255, 255, 255, 0.025);
+      background: rgba(var(--surface-rgb), 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
       color: var(--text-1);
@@ -718,7 +833,7 @@
     /* ─── Chip toggles ───────────────────────────────────────────────────── */
     .chip-toggle {
       padding: 7px 15px;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(var(--surface-rgb), 0.03);
       border: 1px solid var(--border);
       border-radius: 99px;
       color: var(--text-2);
@@ -737,7 +852,7 @@
     .chip-toggle.active {
       background: rgba(99, 102, 241, 0.18);
       border-color: var(--accent);
-      color: #e0e7ff;
+      color: var(--indigo-text-strong);
     }
 
     /* ─── Loading card ───────────────────────────────────────────────────── */
@@ -807,7 +922,7 @@
     }
 
     .ai-output-card {
-      background: rgba(10, 12, 24, 0.55);
+      background: rgba(var(--panel-strong-rgb), 0.55);
       border: 1px solid var(--border-lit);
       border-radius: var(--r-md);
       padding: 22px;
@@ -833,7 +948,7 @@
       align-items: center;
       gap: 8px;
       padding: 10px 16px;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(var(--surface-rgb), 0.04);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       font-size: 12.5px;
@@ -847,7 +962,7 @@
     .icon-btn:hover {
       background: rgba(99, 102, 241, 0.12);
       border-color: rgba(99, 102, 241, 0.35);
-      color: #e0e7ff;
+      color: var(--indigo-text-strong);
       transform: translateY(-1px);
     }
 
@@ -889,7 +1004,7 @@
       padding: 40px 20px;
       border: 1.5px dashed var(--border);
       border-radius: var(--r-md);
-      background: rgba(255, 255, 255, 0.015);
+      background: rgba(var(--surface-rgb), 0.015);
       color: var(--text-3);
       cursor: pointer;
       transition: all 0.2s var(--ease);
@@ -924,7 +1039,7 @@
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(var(--surface-rgb), 0.035);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       margin-bottom: 12px;
@@ -965,13 +1080,13 @@
     }
 
     .file-preview-head button:hover {
-      color: #f87171;
+      color: var(--red-text-strong);
     }
 
     #doc-extracted-text {
       width: 100%;
       min-height: 120px;
-      background: rgba(0, 0, 0, 0.2);
+      background: var(--code-box-bg);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       color: var(--text-2);
@@ -1105,7 +1220,7 @@
     }
 
     .chat-row-ai .chat-bubble {
-      background: rgba(255, 255, 255, 0.045);
+      background: rgba(var(--surface-rgb), 0.045);
       border: 1px solid var(--border);
       color: var(--text-1);
       border-top-left-radius: 4px;
@@ -1152,7 +1267,7 @@
     .chat-composer {
       border-top: 1px solid var(--border);
       padding: 14px 20px 18px;
-      background: rgba(8, 10, 22, 0.4);
+      background: rgba(var(--panel-strong-rgb), 0.4);
     }
 
     .composer-chip-row {
@@ -1170,14 +1285,14 @@
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 99px;
       font-size: 12px;
-      color: #c7d2fe;
+      color: var(--indigo-text);
       margin-bottom: 10px;
     }
 
     .attach-chip button {
       background: none;
       border: none;
-      color: #c7d2fe;
+      color: var(--indigo-text);
       font-size: 15px;
       cursor: pointer;
       line-height: 1;
@@ -1187,7 +1302,7 @@
       display: flex;
       align-items: flex-end;
       gap: 10px;
-      background: rgba(255, 255, 255, 0.025);
+      background: rgba(var(--surface-rgb), 0.025);
       border: 1px solid var(--border);
       border-radius: var(--r-md);
       padding: 8px 8px 8px 14px;
@@ -1224,7 +1339,7 @@
       display: grid;
       place-items: center;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(var(--surface-rgb), 0.04);
       color: var(--text-2);
       cursor: pointer;
       flex-shrink: 0;
@@ -1284,7 +1399,7 @@
     .history-item {
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(var(--surface-rgb), 0.02);
       overflow: hidden;
     }
 
@@ -1308,7 +1423,7 @@
       font-weight: 700;
       letter-spacing: 0.3px;
       background: rgba(99, 102, 241, 0.15);
-      color: #a5b4fc;
+      color: var(--indigo-text);
       white-space: nowrap;
     }
 
@@ -1430,7 +1545,7 @@
       padding: 10px 18px;
       background: rgba(239, 68, 68, 0.08);
       border: 1px solid rgba(239, 68, 68, 0.22);
-      color: #fca5a5;
+      color: var(--red-text);
       font-size: 12.5px;
       font-weight: 600;
       border-radius: var(--r-sm);
@@ -1449,7 +1564,7 @@
       align-items: center;
       justify-content: center;
       padding: 13px;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(var(--surface-rgb), 0.04);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       color: var(--text-1);
@@ -1463,7 +1578,7 @@
     .logout-btn-full:hover {
       background: rgba(239, 68, 68, 0.1);
       border-color: rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      color: var(--red-text);
     }
 
     /* ─── Toast ──────────────────────────────────────────────────────────── */
@@ -1483,7 +1598,7 @@
       align-items: center;
       gap: 10px;
       padding: 12px 18px;
-      background: rgba(10, 12, 25, 0.96);
+      background: rgba(var(--panel-strong-rgb), 0.96);
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
@@ -1539,12 +1654,12 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(var(--surface-rgb), 0.1);
       border-radius: 99px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(var(--surface-rgb), 0.18);
     }
 
     /* ─── Responsive ─────────────────────────────────────────────────────── */
@@ -1752,6 +1867,22 @@
         <div class="topbar-actions">
           <div class="model-pill">✦ <span id="model-pill-text">Gemini 2.5 Flash</span></div>
           <div class="limit-pill" id="limit-pill">3 generations left</div>
+          <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Switch theme" aria-label="Switch between light and dark theme">
+            <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+            </svg>
+            <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <line x1="12" y1="2" x2="12" y2="4" />
+              <line x1="12" y1="20" x2="12" y2="22" />
+              <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />
+              <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" />
+              <line x1="2" y1="12" x2="4" y2="12" />
+              <line x1="20" y1="12" x2="22" y2="12" />
+              <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
+              <line x1="17.66" y1="6.34" x2="19.07" y2="4.93" />
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -2077,6 +2208,35 @@
             </div>
 
             <div class="settings-block" style="border-top:none; padding-top:0;">
+              <p class="label">Appearance</p>
+              <div class="settings-row">
+                <span>Theme</span>
+                <div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
+                  <button type="button" class="theme-switch-opt active" data-theme-choice="dark">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                    </svg>
+                    Dark
+                  </button>
+                  <button type="button" class="theme-switch-opt" data-theme-choice="light">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <line x1="12" y1="2" x2="12" y2="4" />
+                      <line x1="12" y1="20" x2="12" y2="22" />
+                      <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />
+                      <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" />
+                      <line x1="2" y1="12" x2="4" y2="12" />
+                      <line x1="20" y1="12" x2="22" y2="12" />
+                      <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
+                      <line x1="17.66" y1="6.34" x2="19.07" y2="4.93" />
+                    </svg>
+                    Light
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-block">
               <p class="label">Usage</p>
               <div class="usage-bar large">
                 <div class="usage-bar-fill" id="settings-usage-fill"></div>
@@ -2196,6 +2356,30 @@
       });
       document.getElementById('sidebar-scrim').addEventListener('click', () => {
         document.body.classList.remove('sidebar-open');
+      });
+    }
+
+    /* ── Theme (light / dark) ─────────────────────────────────────────── */
+    function applyTheme(theme) {
+      theme = theme === 'light' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      try { localStorage.setItem('smart-ai-theme', theme); } catch (e) { /* storage unavailable, theme just won't persist */ }
+      document.querySelectorAll('.theme-switch-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeChoice === theme);
+      });
+    }
+
+    function bindTheme() {
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      applyTheme(current);
+
+      document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+        const now = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        applyTheme(now);
+      });
+
+      document.querySelectorAll('.theme-switch-opt').forEach(btn => {
+        btn.addEventListener('click', () => applyTheme(btn.dataset.themeChoice));
       });
     }
 
@@ -2715,6 +2899,7 @@
     /* ── Init ──────────────────────────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', () => {
       bindNav();
+      bindTheme();
       bindComposer();
       bindDocuments();
       bindHistory();
