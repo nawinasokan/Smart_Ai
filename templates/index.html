@@ -929,11 +929,87 @@
       box-shadow: 0 0 40px rgba(99, 102, 241, 0.1);
     }
 
-    .ai-output-card p {
+    .ai-output-card .markdown-body {
       font-size: 14.5px;
       line-height: 1.8;
-      white-space: pre-wrap;
       word-break: break-word;
+    }
+
+    /* ─── Rendered markdown (AI output) ─────────────────────────────────── */
+    .markdown-body p {
+      margin: 0 0 12px;
+    }
+
+    .markdown-body :first-child {
+      margin-top: 0;
+    }
+
+    .markdown-body :last-child {
+      margin-bottom: 0;
+    }
+
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4,
+    .markdown-body h5,
+    .markdown-body h6 {
+      margin: 18px 0 10px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .markdown-body h1 { font-size: 1.5em; }
+    .markdown-body h2 { font-size: 1.3em; }
+    .markdown-body h3 { font-size: 1.15em; }
+    .markdown-body h4,
+    .markdown-body h5,
+    .markdown-body h6 { font-size: 1em; }
+
+    .markdown-body ul,
+    .markdown-body ol {
+      margin: 0 0 12px;
+      padding-left: 22px;
+    }
+
+    .markdown-body li {
+      margin: 4px 0;
+    }
+
+    .markdown-body strong { font-weight: 700; }
+    .markdown-body em { font-style: italic; }
+
+    .markdown-body code {
+      background: rgba(var(--surface-rgb), 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .markdown-body pre {
+      background: rgba(var(--surface-rgb), 0.12);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      margin: 0 0 12px;
+    }
+
+    .markdown-body pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .markdown-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+
+    .markdown-body a {
+      color: var(--accent);
+      text-decoration: underline;
     }
 
     .export-row {
@@ -1213,6 +1289,10 @@
       word-break: break-word;
     }
 
+    .chat-bubble.markdown-body {
+      white-space: normal;
+    }
+
     .chat-row-user .chat-bubble {
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       color: #fff;
@@ -1473,6 +1553,10 @@
       color: var(--text-2);
       white-space: pre-wrap;
       word-break: break-word;
+    }
+
+    .history-item-text.markdown-body {
+      white-space: normal;
     }
 
     .history-item-actions {
@@ -1982,7 +2066,7 @@
           <div class="panel result-panel hidden" id="doc-result-panel">
             <p class="label">Document Summary</p>
             <div class="ai-output-card">
-              <p id="doc-result-text"></p>
+              <div class="markdown-body" id="doc-result-text"></div>
             </div>
             <div class="export-row">
               <button type="button" class="export-btn" data-fmt="pdf"><span
@@ -2016,7 +2100,7 @@
           <div class="panel result-panel hidden" id="summarize-result-panel">
             <p class="label">Summary</p>
             <div class="ai-output-card">
-              <p id="summarize-result-text"></p>
+              <div class="markdown-body" id="summarize-result-text"></div>
             </div>
             <div class="export-row">
               <button type="button" class="export-btn" data-fmt="pdf"><span class="export-badge pdf">PDF</span>
@@ -2065,7 +2149,7 @@
           <div class="panel result-panel hidden" id="translate-result-panel">
             <p class="label">Translation</p>
             <div class="ai-output-card">
-              <p id="translate-result-text"></p>
+              <div class="markdown-body" id="translate-result-text"></div>
             </div>
             <div class="export-row">
               <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
@@ -2110,7 +2194,7 @@
           <div class="panel result-panel hidden" id="email-result-panel">
             <p class="label">Email Draft</p>
             <div class="ai-output-card">
-              <p id="email-result-text"></p>
+              <div class="markdown-body" id="email-result-text"></div>
             </div>
             <div class="export-row">
               <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
@@ -2163,7 +2247,7 @@
           <div class="panel result-panel hidden" id="blog-result-panel">
             <p class="label">Blog Post</p>
             <div class="ai-output-card">
-              <p id="blog-result-text"></p>
+              <div class="markdown-body" id="blog-result-text"></div>
             </div>
             <div class="export-row">
               <button type="button" class="export-btn" data-fmt="docx"><span class="export-badge docx">DOC</span>
@@ -2323,6 +2407,85 @@
       return div.innerHTML;
     }
 
+    /* ── Minimal markdown renderer (headings, bold/italic, lists, code, links) ──
+       Input is escaped first, so inline() only ever wraps already-safe text. */
+    function renderMarkdown(src) {
+      if (!src) return '';
+      const lines = escapeHtml(src).replace(/\r\n/g, '\n').split('\n');
+      let html = '';
+      let listType = null;
+      let paraBuf = [];
+      let i = 0;
+
+      function flushPara() {
+        if (paraBuf.length) {
+          html += '<p>' + paraBuf.join('<br>') + '</p>';
+          paraBuf = [];
+        }
+      }
+      function closeList() {
+        if (listType) { html += '</' + listType + '>'; listType = null; }
+      }
+      function inline(text) {
+        text = text.replace(/`([^`]+?)`/g, '<code>$1</code>');
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        text = text.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+        text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        return text;
+      }
+
+      while (i < lines.length) {
+        const trimmed = lines[i].trim();
+
+        if (/^```/.test(trimmed)) {
+          flushPara(); closeList();
+          i++;
+          const codeLines = [];
+          while (i < lines.length && !/^```/.test(lines[i].trim())) { codeLines.push(lines[i]); i++; }
+          i++;
+          html += '<pre><code>' + codeLines.join('\n') + '</code></pre>';
+          continue;
+        }
+
+        if (!trimmed) { flushPara(); closeList(); i++; continue; }
+
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+          flushPara(); closeList(); html += '<hr>'; i++; continue;
+        }
+
+        const h = trimmed.match(/^(#{1,6})\s+(.*)$/);
+        if (h) {
+          flushPara(); closeList();
+          html += '<h' + h[1].length + '>' + inline(h[2]) + '</h' + h[1].length + '>';
+          i++; continue;
+        }
+
+        const ul = trimmed.match(/^[-*•]\s+(.*)$/);
+        if (ul) {
+          flushPara();
+          if (listType !== 'ul') { closeList(); listType = 'ul'; html += '<ul>'; }
+          html += '<li>' + inline(ul[1]) + '</li>';
+          i++; continue;
+        }
+
+        const ol = trimmed.match(/^\d+[.)]\s+(.*)$/);
+        if (ol) {
+          flushPara();
+          if (listType !== 'ol') { closeList(); listType = 'ol'; html += '<ol>'; }
+          html += '<li>' + inline(ol[1]) + '</li>';
+          i++; continue;
+        }
+
+        closeList();
+        paraBuf.push(inline(trimmed));
+        i++;
+      }
+      flushPara();
+      closeList();
+      return html;
+    }
+
     function truncateText(str, n) {
       if (!str) return '';
       return str.length > n ? str.slice(0, n) + '…' : str;
@@ -2474,7 +2637,7 @@
           const data = await callGenerate(cfg.mode, promptText, extra);
           if (data === null) return;
 
-          resultText.textContent = data.response;
+          resultText.innerHTML = renderMarkdown(data.response);
           resultPanel.dataset.content = data.response;
           resultPanel.dataset.title = cfg.titleGetter ? cfg.titleGetter() : 'Smart AI Output';
           resultPanel.classList.remove('hidden');
@@ -2562,7 +2725,12 @@
 
       const bubble = document.createElement('div');
       bubble.className = 'chat-bubble';
-      bubble.textContent = text;
+      if (role === 'ai') {
+        bubble.classList.add('markdown-body');
+        bubble.innerHTML = renderMarkdown(text);
+      } else {
+        bubble.textContent = text;
+      }
 
       if (role === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
       else { row.appendChild(avatar); row.appendChild(bubble); }
@@ -2779,7 +2947,7 @@
           '<p class="history-item-label">Prompt</p>' +
           '<p class="history-item-text">' + escapeHtml(item.prompt) + '</p>' +
           '<p class="history-item-label">Response</p>' +
-          '<p class="history-item-text">' + escapeHtml(item.response) + '</p>' +
+          '<div class="history-item-text markdown-body">' + renderMarkdown(item.response) + '</div>' +
           '<div class="history-item-actions">' +
           '<button type="button" class="icon-btn history-copy">Copy response</button>' +
           '<button type="button" class="icon-btn history-delete">Delete</button>' +

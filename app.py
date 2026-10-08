@@ -31,7 +31,7 @@ if not GOOGLE_API_KEY:
 
 # New google-genai SDK client
 client = genai.Client(api_key=GOOGLE_API_KEY)
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.7-flash"
 
 GENERATION_LIMIT = 3
 MAX_PROMPT_CHARS = 18000
