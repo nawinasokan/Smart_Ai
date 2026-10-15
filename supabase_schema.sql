@@ -22,3 +22,18 @@ create index if not exists history_email_created_idx
 -- which bypasses RLS. No policies are required for app.py to function.
 -- Only add policies below if you also want end users to query this table
 -- directly from the client with the anon/public key.
+
+-- ---------------------------------------------------------------------
+-- Keep-alive table: written by .github/workflows/supabase-keepalive.yml
+-- every 6 days so the free-tier project is never paused for inactivity.
+-- ---------------------------------------------------------------------
+create table if not exists keepalive (
+  id int primary key,
+  last_ping timestamptz not null default now(),
+  ping_count bigint not null default 0
+);
+
+alter table keepalive enable row level security;
+-- No policies on purpose: only the service-role key (used by the workflow) can access it.
+
+insert into keepalive (id) values (1) on conflict (id) do nothing;

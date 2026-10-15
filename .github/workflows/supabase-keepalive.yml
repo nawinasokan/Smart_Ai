@@ -1,0 +1,31 @@
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # 03:00 UTC on days 1,7,13,19,25,31 of each month -> never more than 6-7 days apart
+    - cron: "0 3 */6 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write to Supabase (counts as DB activity)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          set -euo pipefail
+          base="${SUPABASE_URL%/}/rest/v1/keepalive"
+          hdr=(-H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" -H "Content-Type: application/json")
+
+          # read current count, then upsert row id=1 with new timestamp
+          count=$(curl -fsS "${hdr[@]}" "$base?id=eq.1&select=ping_count" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d[0]["ping_count"] if d else 0)')
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          curl -fsS -X POST "${hdr[@]}" \
+            -H "Prefer: resolution=merge-duplicates,return=minimal" \
+            "$base?on_conflict=id" \
+            -d "{\"id\":1,\"last_ping\":\"$now\",\"ping_count\":$((count+1))}"
+
+          echo "Supabase pinged at $now (count $((count+1)))"
